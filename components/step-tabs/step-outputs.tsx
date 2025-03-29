@@ -1,18 +1,17 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useWorkflow } from "@/hooks/use-workflow"
+import { useState, useEffect } from "react" // Removed useRef
+import { useWorkflow, type Step, type OutputField } from "@/hooks/use-workflow" // Import types
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Save, FileCheck, FileText } from "lucide-react"
 
-export default function StepOutputs({ stepData }: { stepData: any }) {
-  const { stepOutputs, autoSaveOutput, primaryKeyword, blogOutlineText } = useWorkflow()
+export default function StepOutputs({ stepData }: { stepData: Step }) { // Use Step type
+  const { stepOutputs, autoSaveOutput } = useWorkflow() // Removed unused primaryKeyword, blogOutlineText
   const [wordCounts, setWordCounts] = useState<Record<string, number>>({})
 
-  // useRef to track initial render
-  const isInitialRender = useRef(true)
+  // Removed unused isInitialRender ref
 
   const updateWordCount = (text: string, fieldId: string) => {
     const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).filter(Boolean).length
@@ -182,7 +181,7 @@ export default function StepOutputs({ stepData }: { stepData: any }) {
     } else {
       // When stepData.id is not 16, loop through stepData.outputFields and update word counts
       if (stepData.outputFields) {
-        stepData.outputFields.forEach((outputField: any) => {
+        stepData.outputFields.forEach((outputField: OutputField) => { // Use OutputField type
           const outputId = `output-${stepData.id}-${outputField.name}`
           const currentStepOutputs = stepOutputs[stepData.id] || {}
           const savedOutput = currentStepOutputs[outputField.name] || ""
@@ -208,7 +207,7 @@ export default function StepOutputs({ stepData }: { stepData: any }) {
       </h3>
 
       <div className="space-y-8">
-        {stepData.outputFields.map((outputField: any) => {
+        {stepData.outputFields.map((outputField: OutputField) => { // Use OutputField type
           const outputId = `output-${stepData.id}-${outputField.name}`
           const currentStepOutputs = stepOutputs[stepData.id] || {}
           const savedOutput = currentStepOutputs[outputField.name] || ""
@@ -239,4 +238,3 @@ export default function StepOutputs({ stepData }: { stepData: any }) {
     </div>
   )
 }
-

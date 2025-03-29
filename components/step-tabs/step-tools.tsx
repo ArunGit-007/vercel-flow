@@ -1,13 +1,13 @@
 "use client"
 
-import { useWorkflow } from "@/hooks/use-workflow"
+import { useWorkflow, type Step, type Tool } from "@/hooks/use-workflow" // Import types
 import { useFeedback } from "@/hooks/use-feedback"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardFooter } from "@/components/ui/card" // Removed CardContent
 import { ExternalLink, X } from "lucide-react"
 import StockImageSearch from "@/components/stock-image-search"
 
-export default function StepTools({ stepData }: { stepData: any }) {
+export default function StepTools({ stepData }: { stepData: Step }) { // Use Step type
   const { removeTool } = useWorkflow()
   const { showFeedback } = useFeedback()
 
@@ -24,7 +24,7 @@ export default function StepTools({ stepData }: { stepData: any }) {
     <div>
       {tools.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {tools.map((tool: any, index: number) => (
+          {tools.map((tool: Tool, index: number) => ( // Use Tool type
             <Card key={index} className="relative group">
               <Button
                 variant="destructive"
@@ -68,4 +68,3 @@ export default function StepTools({ stepData }: { stepData: any }) {
     </div>
   )
 }
-

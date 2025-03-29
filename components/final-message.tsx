@@ -17,7 +17,7 @@ export default function FinalMessage() {
         <h2 className="text-4xl font-heading font-bold mb-6">Workflow Completed!</h2>
 
         <p className="text-muted-foreground mb-10 max-w-2xl mx-auto text-lg">
-          Congratulations! You've successfully completed all steps. Review the final output in Step 16 or export your
+          Congratulations! You have successfully completed all steps. Review the final output in Step 16 or export your
           content below.
         </p>
 
@@ -53,4 +53,3 @@ export default function FinalMessage() {
     </div>
   )
 }
-

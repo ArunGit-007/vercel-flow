@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { useWorkflow } from "@/hooks/use-workflow"
+import { useState, useEffect, useCallback } from "react"
+import { useWorkflow, type Step, type InputField } from "@/hooks/use-workflow" // Import types
+import { type ProfileData } from "@/hooks/use-profile" // Import type
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
@@ -13,13 +14,25 @@ export default function StepDescription({
   primaryKeyword,
   profileData,
 }: {
-  stepData: any
+  stepData: Step // Use imported Step type
   primaryKeyword: string
-  profileData: any
+  profileData: ProfileData // Use imported ProfileData type
 }) {
   const { autoSaveOutput, updatePrimaryKeyword, stepOutputs } = useWorkflow()
   const { showFeedback } = useFeedback()
-  const [multiInputs, setMultiInputs] = useState<Record<string, string[]>>({})
+  const [localMultiInputs, setLocalMultiInputs] = useState<Record<string, string[]>>(() => {
+    const initialMultiInputs: Record<string, string[]> = {}
+    if (stepData.inputField) {
+      stepData.inputField.forEach(field => {
+        if (field.isMultiInput) {
+          const savedValue = stepOutputs[stepData.id]?.[field.name]
+          initialMultiInputs[field.name] = Array.isArray(savedValue) ? savedValue : savedValue ? [savedValue] : [""]
+        }
+      })
+    }
+    return initialMultiInputs
+  })
+
 
   // Replace markdown bold with HTML strong
   const formattedDescription = stepData.description
@@ -34,55 +47,51 @@ export default function StepDescription({
     }
   }
 
-  const handleMultiInputChange = (stepId: number, fieldName: string, values: string[]) => {
-    autoSaveOutput(
-      stepId,
-      fieldName,
-      values.filter((v) => v.trim() !== ""),
-    )
-  }
+  // --- New handlers for localMultiInputs state ---
+  const [pendingUpdates, setPendingUpdates] = useState<Array<() => void>>([])
 
-  const addMultiInputItem = (fieldName: string, maxItems?: number) => {
-    setMultiInputs((prev) => {
-      const currentValues = prev[fieldName] || []
+  useEffect(() => {
+    if (pendingUpdates.length > 0) {
+      pendingUpdates.forEach(update => update())
+      setPendingUpdates([])
+    }
+  }, [pendingUpdates])
+
+  const addLocalMultiInputItem = (fieldName: string, maxItems?: number) => {
+    setLocalMultiInputs((prev) => {
+      const currentValues = prev[fieldName] || [""]
       if (maxItems && currentValues.length >= maxItems) {
         showFeedback(`Maximum of ${maxItems} items allowed.`, "warning")
         return prev
       }
-      return {
-        ...prev,
-        [fieldName]: [...currentValues, ""],
-      }
+      const newValues = [...currentValues, ""]
+      setPendingUpdates(prev => [...prev, () => autoSaveOutput(stepData.id, fieldName, newValues.filter(v => v.trim() !== ""))])
+      return { ...prev, [fieldName]: newValues }
     })
   }
 
-  const removeMultiInputItem = (fieldName: string, index: number) => {
-    setMultiInputs((prev) => {
-      const currentValues = [...(prev[fieldName] || [])]
+  const removeLocalMultiInputItem = (fieldName: string, index: number) => {
+    setLocalMultiInputs((prev) => {
+      const currentValues = [...(prev[fieldName] || [""])]
       if (currentValues.length <= 1) {
-        currentValues[0] = ""
+        currentValues[0] = "" // Clear if only one item
       } else {
         currentValues.splice(index, 1)
       }
-      handleMultiInputChange(stepData.id, fieldName, currentValues)
-      return {
-        ...prev,
-        [fieldName]: currentValues,
-      }
+      setPendingUpdates(prev => [...prev, () => autoSaveOutput(stepData.id, fieldName, currentValues.filter(v => v.trim() !== ""))])
+      return { ...prev, [fieldName]: currentValues }
     })
   }
 
-  const updateMultiInputValue = (fieldName: string, index: number, value: string) => {
-    setMultiInputs((prev) => {
-      const currentValues = [...(prev[fieldName] || [])]
+  const updateLocalMultiInputValue = (fieldName: string, index: number, value: string) => {
+    setLocalMultiInputs((prev) => {
+      const currentValues = [...(prev[fieldName] || [""])]
       currentValues[index] = value
-      handleMultiInputChange(stepData.id, fieldName, currentValues)
-      return {
-        ...prev,
-        [fieldName]: currentValues,
-      }
+      setPendingUpdates(prev => [...prev, () => autoSaveOutput(stepData.id, fieldName, currentValues.filter(v => v.trim() !== ""))])
+      return { ...prev, [fieldName]: currentValues }
     })
   }
+  // --- End of new handlers ---
 
   return (
     <div>
@@ -114,14 +123,21 @@ export default function StepDescription({
         <div className="mt-6 space-y-4 border-t border-border pt-6">
           <h4 className="text-lg font-semibold mb-2">Inputs</h4>
 
-          {stepData.inputField.map((inputField: any) => {
+          {stepData.inputField.map((inputField: InputField) => { // Use InputField type
             const fieldId = `input-${stepData.id}-${inputField.name}`
             const currentStepOutputs = stepOutputs[stepData.id] || {}
-            let savedValue = currentStepOutputs[inputField.name] || ""
+            let savedValue = currentStepOutputs[inputField.name]
+
+            // Use local state for multi-inputs
+            const multiInputValues = localMultiInputs[inputField.name] || [""]
 
             if (stepData.id === 1 && inputField.name === "primaryKeyword") {
               savedValue = primaryKeyword
+            } else if (!inputField.isMultiInput) {
+              // Ensure savedValue is a string for single inputs
+              savedValue = typeof savedValue === 'string' ? savedValue : ''
             }
+
 
             return (
               <div key={fieldId} className="space-y-2">
@@ -131,19 +147,19 @@ export default function StepDescription({
 
                 {inputField.isMultiInput ? (
                   <div className="space-y-2">
-                    {(Array.isArray(savedValue) ? savedValue : savedValue ? [savedValue] : [""]).map((item, index) => (
+                    {multiInputValues.map((item, index) => ( // Use local state values
                       <div key={`${fieldId}-${index}`} className="flex items-center space-x-2">
                         <Input
                           id={`${fieldId}-${index}`}
-                          value={item}
+                          value={item} // Use item from local state
                           placeholder={inputField.placeholder}
-                          onChange={(e) => updateMultiInputValue(inputField.name, index, e.target.value)}
+                          onChange={(e) => updateLocalMultiInputValue(inputField.name, index, e.target.value)} // Use new handler
                           className="flex-1"
                         />
                         <Button
                           variant="destructive"
                           size="icon"
-                          onClick={() => removeMultiInputItem(inputField.name, index)}
+                          onClick={() => removeLocalMultiInputItem(inputField.name, index)} // Use new handler
                           aria-label="Remove item"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -151,12 +167,11 @@ export default function StepDescription({
                       </div>
                     ))}
 
-                    {(!inputField.maxItems ||
-                      (Array.isArray(savedValue) ? savedValue.length : 1) < inputField.maxItems) && (
+                    {(!inputField.maxItems || multiInputValues.length < inputField.maxItems) && ( // Check local state length
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => addMultiInputItem(inputField.name, inputField.maxItems)}
+                        onClick={() => addLocalMultiInputItem(inputField.name, inputField.maxItems)} // Use new handler
                         className="mt-2"
                       >
                         Add Item
@@ -166,7 +181,7 @@ export default function StepDescription({
                 ) : (
                   <Input
                     id={fieldId}
-                    value={savedValue}
+                    value={savedValue} // Use potentially updated savedValue
                     placeholder={inputField.placeholder}
                     onChange={(e) => handleInputChange(stepData.id, inputField.name, e.target.value)}
                   />
@@ -179,4 +194,3 @@ export default function StepDescription({
     </div>
   )
 }
-

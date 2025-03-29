@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { useWorkflow } from "@/hooks/use-workflow"
+import { useWorkflow, type Step } from "@/hooks/use-workflow" // Import Step type
 import { useFeedback } from "@/hooks/use-feedback"
 import { Button } from "@/components/ui/button"
 import { StarIcon, Edit, Trash2, Copy, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
 
-export default function StepPrompts({ stepData }: { stepData: any }) {
+export default function StepPrompts({ stepData }: { stepData: Step }) { // Use Step type
   const { promptTemplates, replaceOutputPlaceholders } = useWorkflow()
   const { showFeedback } = useFeedback()
   const [expandedPrompts, setExpandedPrompts] = useState<Record<string, boolean>>({})

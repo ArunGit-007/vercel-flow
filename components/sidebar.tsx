@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import Image from "next/image" // Import next/image
 import { useState, useEffect } from "react"
 import { useWorkflow } from "@/hooks/use-workflow"
 import { useLocalStorage } from "@/hooks/use-local-storage"
@@ -19,9 +19,9 @@ import {
   FlaskRoundIcon as Flask,
   FileIcon as FileList,
   Edit,
-  Palette,
-  Pencil,
-  Image,
+  // Palette, // Removed unused import
+  // Pencil, // Removed unused import
+  LucideImage, // Renamed Image import to avoid conflict with next/image
   MessageSquare,
   FileCheck,
   Link,
@@ -45,7 +45,7 @@ export default function Sidebar({
   onResetWorkflow: () => void
   onOpenProfileModal: () => void
 }) {
-  const { steps, currentStep, showStep } = useWorkflow()
+  const { currentStep, showStep } = useWorkflow() // Removed unused 'steps'
   const { profileData } = useProfile()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage("sidebarCollapsed", false)
   const [progress, setProgress] = useState(0)
@@ -59,7 +59,7 @@ export default function Sidebar({
     "ri-file-list-3-line": <FileList className="w-5 h-5" />,
     "ri-quill-pen-line": <Feather className="w-5 h-5" />,
     "ri-seo-line": <LineChart className="w-5 h-5" />,
-    "ri-image-line": <Image className="w-5 h-5" />,
+    "ri-image-line": <LucideImage className="w-5 h-5" />, // Use renamed import
     "ri-user-voice-line": <MessageSquare className="w-5 h-5" />,
     "ri-edit-line": <Edit className="w-5 h-5" />,
     "ri-shield-check-line": <Shield className="w-5 h-5" />,
@@ -190,7 +190,7 @@ export default function Sidebar({
     <aside
       className={`${
         isSidebarCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width)]"
-      } flex-shrink-0 p-6 relative transition-all duration-300 border-r border-border/50 bg-gradient-to-b from-background to-background/95 backdrop-blur-sm`}
+      } flex-shrink-0 p-6 relative transition-all duration-300 border-r border-border/20 bg-background/95 backdrop-blur-sm rounded-r-xl shadow-sm`}
     >
       <button
         className="absolute top-1/2 -right-4 transform -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer z-10 shadow-lg border-none text-sm transition-all duration-300 hover:scale-110 hover:shadow-primary/30"
@@ -204,27 +204,28 @@ export default function Sidebar({
         <div className="relative">
           {/* Header Background with Gradient Overlay */}
           <div className="absolute inset-0 h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent pointer-events-none" />
-          
+
           {/* Main Header Content */}
           <div className="px-6 pt-6 pb-4 relative">
             {/* Profile Section */}
             <div className="flex flex-col items-center">
               {/* Profile Image Container */}
-              <div 
+              <div
                 className="relative mb-4 cursor-pointer group"
                 onClick={onOpenProfileModal}
                 title={`Edit Website Profile & Settings ${profileData.ourDomain ? "(" + profileData.ourDomain + ")" : ""}`}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-110 -z-10" />
-                <img
+                {/* Use next/image */}
+                <Image
                   src={profileData.logoUrl || DEFAULT_LOGO_SVG}
-                  alt="Profile"
+                  alt="Profile Logo" // Added descriptive alt text
+                  width={80} // Base width (w-20)
+                  height={80} // Base height (h-20)
                   className={`${
                     isSidebarCollapsed ? "w-14 h-14" : "w-20 h-20"
                   } rounded-2xl object-cover shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-primary/20 border-2 border-background`}
-                  onError={(e) => {
-                    e.currentTarget.src = DEFAULT_LOGO_SVG
-                  }}
+                  // onError removed, next/image handles errors differently
                 />
                 {/* Decorative Ring */}
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary/50 to-primary/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-all duration-300" />
@@ -305,6 +306,14 @@ export default function Sidebar({
   )
 }
 
+// Define Step interface before StepsList
+interface Step {
+  id: number;
+  title: string;
+  icon: string;
+  category: string;
+}
+
 function StepsList({
   steps,
   currentStep,
@@ -312,7 +321,7 @@ function StepsList({
   isCollapsed,
   stepIcons,
 }: {
-  steps: any[]
+  steps: Step[] // Use specific Step interface
   currentStep: number
   showStep: (stepId: number) => void
   isCollapsed: boolean
@@ -339,13 +348,17 @@ function StepsList({
               </div>
             )}
             <div
-              className={`step-item group ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}`}
+              className={`step-item group ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""} ${
+                isCollapsed ? "justify-center" : ""
+              }`}
               onClick={() => showStep(step.id)}
               data-step-id={step.id}
               title={step.title}
             >
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
+              <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
+                <div className={`flex-shrink-0 ${
+                  isCollapsed ? "p-2 hover:bg-muted/50 rounded-lg transition-colors" : ""
+                }`}>
                   {isCompleted
                     ? stepIcons["ri-check-line"]
                     : stepIcons[step.icon] || stepIcons["ri-checkbox-blank-circle-line"]}
@@ -361,4 +374,3 @@ function StepsList({
     </>
   )
 }
-

@@ -13,7 +13,7 @@ import { useWorkflow } from "@/hooks/use-workflow"
 import { useFeedback } from "@/hooks/use-feedback"
 
 export default function Dashboard() {
-  const { currentStep, steps, stepOutputs, resetWorkflow } = useWorkflow()
+  const { currentStep, steps, resetWorkflow } = useWorkflow()
   const { feedbacks } = useFeedback()
   const [showModals, setShowModals] = useState({
     addTool: false,
@@ -37,17 +37,19 @@ export default function Dashboard() {
       <div
         className={`flex rounded-2xl shadow-lg overflow-hidden border bg-card mt-8 mb-8 min-h-[calc(100vh-4rem)] relative ${isWorkflowComplete ? "hidden" : ""}`}
       >
-        <Sidebar
-          onOpenToolLibrary={() => toggleModal("toolLibrary", true)}
-          onOpenPromptLibrary={() => toggleModal("promptLibrary", true)}
-          onResetWorkflow={resetWorkflow}
-          onOpenProfileModal={() => toggleModal("profile", true)}
-        />
+        <div className="flex-1 flex rounded-xl overflow-hidden m-2 gap-2 bg-background/50">
+          <Sidebar
+            onOpenToolLibrary={() => toggleModal("toolLibrary", true)}
+            onOpenPromptLibrary={() => toggleModal("promptLibrary", true)}
+            onResetWorkflow={resetWorkflow}
+            onOpenProfileModal={() => toggleModal("profile", true)}
+          />
 
-        <ContentArea
-          onOpenAddTool={() => toggleModal("addTool", true)}
-          onOpenPromptForm={() => toggleModal("promptForm", true)}
-        />
+          <ContentArea
+            onOpenAddTool={() => toggleModal("addTool", true)}
+            onOpenPromptForm={() => toggleModal("promptForm", true)}
+          />
+        </div>
       </div>
 
       {isWorkflowComplete && <FinalMessage />}
@@ -56,17 +58,12 @@ export default function Dashboard() {
 
       {/* Modals */}
       <ToolModal isOpen={showModals.addTool} onClose={() => toggleModal("addTool", false)} />
-
       <ToolLibraryModal isOpen={showModals.toolLibrary} onClose={() => toggleModal("toolLibrary", false)} />
-
       <PromptModal isOpen={showModals.promptForm} onClose={() => toggleModal("promptForm", false)} />
-
       <PromptLibraryModal isOpen={showModals.promptLibrary} onClose={() => toggleModal("promptLibrary", false)} />
-
       <ProfileModal isOpen={showModals.profile} onClose={() => toggleModal("profile", false)} />
 
       <QuickNavigation />
     </div>
   )
 }
-

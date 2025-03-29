@@ -5,14 +5,14 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useFeedback } from "@/hooks/use-feedback"
 
-// Define interfaces
-interface Tool {
+// Define interfaces (and export them)
+export interface Tool {
   name: string
   url: string
   category: string
 }
 
-interface InputField {
+export interface InputField {
   name: string
   label: string
   placeholder: string
@@ -20,13 +20,13 @@ interface InputField {
   maxItems?: number
 }
 
-interface OutputField {
+export interface OutputField {
   name: string
   label: string
   placeholder: string
 }
 
-interface Step {
+export interface Step {
   id: number
   title: string
   icon: string
@@ -37,7 +37,7 @@ interface Step {
   description: string
 }
 
-interface Prompt {
+export interface Prompt {
   id: number
   category: string
   title: string
@@ -710,4 +710,3 @@ export function useWorkflow() {
   }
   return context
 }
-

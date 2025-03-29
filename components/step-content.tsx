@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useWorkflow } from "@/hooks/use-workflow"
+import { useWorkflow, type Step } from "@/hooks/use-workflow" // Import Step type
 import { useProfile } from "@/hooks/use-profile"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -12,12 +12,14 @@ import StepTools from "@/components/step-tabs/step-tools"
 import StepSearch from "@/components/step-tabs/step-search"
 import StepOutputs from "@/components/step-tabs/step-outputs"
 
+// Removed local interface definitions
+
 export default function StepContent({
   stepData,
   onOpenAddTool,
   onOpenPromptForm,
 }: {
-  stepData: any
+  stepData: Step | null // Use imported Step type
   onOpenAddTool: () => void
   onOpenPromptForm: () => void
 }) {
@@ -42,19 +44,28 @@ export default function StepContent({
   return (
     <div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6 border-b rounded-none w-full justify-start h-auto flex-wrap">
-          <TabsTrigger value="description" className="tab-button data-[state=active]:active">
+        <TabsList className="mb-6 bg-background/80 rounded-full p-1 w-full justify-start h-auto flex-wrap gap-1">
+          <TabsTrigger 
+            value="description" 
+            className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             <Info className="w-4 h-4 mr-2" /> Description & Inputs
           </TabsTrigger>
 
           {hasPrompts && (
-            <TabsTrigger value="prompts" className="tab-button data-[state=active]:active">
+            <TabsTrigger 
+              value="prompts" 
+              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
               <FileText className="w-4 h-4 mr-2" /> Prompts ({stepPrompts.length})
             </TabsTrigger>
           )}
 
           {(hasTools || stepId === 8) && (
-            <TabsTrigger value="tools" className="tab-button data-[state=active]:active">
+            <TabsTrigger 
+              value="tools" 
+              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
               <Tool className="w-4 h-4 mr-2" />
               Tools {stepId !== 8 ? `(${(stepData.tools || []).length})` : ""}
               {stepId === 8 ? "& Images" : ""}
@@ -62,13 +73,19 @@ export default function StepContent({
           )}
 
           {hasSearch && (
-            <TabsTrigger value="search" className="tab-button data-[state=active]:active">
+            <TabsTrigger 
+              value="search" 
+              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
               <Search className="w-4 h-4 mr-2" /> Quick Search
             </TabsTrigger>
           )}
 
           {hasOutputs && (
-            <TabsTrigger value="outputs" className="tab-button data-[state=active]:active">
+            <TabsTrigger 
+              value="outputs" 
+              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
               <Save className="w-4 h-4 mr-2" /> Outputs
             </TabsTrigger>
           )}
@@ -121,4 +138,3 @@ export default function StepContent({
     </div>
   )
 }
-

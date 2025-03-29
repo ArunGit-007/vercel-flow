@@ -9,8 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Search, Copy, Save, SatelliteIcon as Spy, FileText, BookOpen } from "lucide-react"
+import { type Step } from "@/hooks/use-workflow" // Import Step type
 
-export default function StepSearch({ stepData }: { stepData: any }) {
+export default function StepSearch({ stepData }: { stepData: Step }) { // Use Step type
   const { primaryKeyword, autoSaveOutput, stepOutputs } = useWorkflow()
   const { showFeedback } = useFeedback()
   const [searchParams, setSearchParams] = useState({
@@ -110,14 +111,20 @@ export default function StepSearch({ stepData }: { stepData: any }) {
     const stepId = stepData.id
     const fieldName = "savedSearchQueries"
 
-    let existingQueries = stepOutputs[stepId]?.[fieldName] || []
+    // Define interface for saved query objects
+    interface SavedQuery {
+      query: string;
+      timestamp: string;
+    }
+
+    let existingQueries: SavedQuery[] = stepOutputs[stepId]?.[fieldName] || []
     if (!Array.isArray(existingQueries)) {
       existingQueries = []
     }
 
     const timestamp = new Date().toISOString()
 
-    if (!existingQueries.some((q) => q.query === generatedQuery)) {
+    if (!existingQueries.some((q: SavedQuery) => q.query === generatedQuery)) { // Add type to 'q'
       existingQueries.push({ query: generatedQuery, timestamp })
       autoSaveOutput(stepId, fieldName, existingQueries)
       showFeedback("Search query saved to step outputs.", "success")
@@ -259,4 +266,3 @@ export default function StepSearch({ stepData }: { stepData: any }) {
     </div>
   )
 }
-

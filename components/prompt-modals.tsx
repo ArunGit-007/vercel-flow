@@ -148,8 +148,17 @@ export function PromptLibraryModal({
   const { showFeedback } = useFeedback()
   const [searchQuery, setSearchQuery] = useState("")
 
+  interface PromptWithStepId {
+    id: number;
+    title: string;
+    category: string;
+    content: string;
+    favorite: boolean;
+    stepId: number;
+  }
+
   // Collect all prompts from all steps
-  let allPrompts: any[] = []
+  let allPrompts: PromptWithStepId[] = []
   for (const stepId in promptTemplates) {
     if (promptTemplates[stepId] && promptTemplates[stepId].length > 0) {
       allPrompts = allPrompts.concat(
@@ -258,4 +267,3 @@ export function PromptLibraryModal({
     </Dialog>
   )
 }
-

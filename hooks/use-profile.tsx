@@ -4,7 +4,7 @@ import type React from "react"
 
 import { createContext, useContext, useState, useEffect } from "react"
 
-interface ProfileData {
+export interface ProfileData { // Export the interface
   logoUrl: string
   ourDomain: string
   generalCompetitors: string
@@ -82,4 +82,3 @@ export function useProfile() {
   }
   return context
 }
-
