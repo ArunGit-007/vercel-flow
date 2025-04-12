@@ -4,36 +4,37 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light Mode - Modern Blue/Gray Theme */
+    --background: 0 0% 98%; /* Slightly off-white */
+    --foreground: 220 10% 15%; /* Dark gray for text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 220 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 10% 15%;
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 215 70% 55%; /* Modern Blue */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 215 15% 95%; /* Light gray */
+    --secondary-foreground: 220 10% 25%; /* Darker gray text on secondary */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 15% 95%; /* Same as secondary */
+    --muted-foreground: 215 10% 50%; /* Medium gray for muted text */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 215 70% 92%; /* Lighter blue for accents */
+    --accent-foreground: 215 70% 30%; /* Darker blue text on accent */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%; /* Red */
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 355.7 100% 97.3%;
+    --success: 140 60% 45%; /* Green */
+    --success-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 215 20% 88%; /* Light gray border */
+    --input: 215 20% 88%; /* Input border */
+    --ring: 215 70% 55%; /* Primary color for focus rings */
 
     --radius: 0.75rem;
 
@@ -42,36 +43,37 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode - Modern Blue/Gray Theme */
+    --background: 220 15% 12%; /* Very dark gray/blue */
+    --foreground: 210 20% 95%; /* Light gray text */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 15% 18%; /* Slightly lighter dark gray for cards */
+    --card-foreground: 210 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 215 70% 60%; /* Slightly brighter blue for dark mode */
+    --primary-foreground: 220 10% 10%; /* Dark text on primary */
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 15% 25%; /* Dark gray */
+    --secondary-foreground: 210 20% 90%; /* Lighter gray text on secondary */
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 15% 25%; /* Same as secondary */
+    --muted-foreground: 215 15% 55%; /* Medium gray for muted text */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 70% 30%; /* Darker blue for accents */
+    --accent-foreground: 210 20% 95%; /* Light text on accent */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 65% 50%; /* Red */
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142.1 70.6% 45.3%;
-    --success-foreground: 144.9 80.4% 10%;
+    --success: 140 60% 50%; /* Green */
+    --success-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 220 15% 30%; /* Dark gray border */
+    --input: 220 15% 30%; /* Input border */
+    --ring: 215 70% 60%; /* Primary color for focus rings */
   }
 }
 
@@ -97,53 +99,41 @@
 }
 
 @layer components {
-  /* Modern Step Item Styles */
+  /* Refined Step Item Styles */
   .step-item {
-    @apply flex items-center gap-3 px-4 py-3 mb-2 rounded-2xl cursor-pointer transition-all duration-300 text-sm;
+    @apply flex items-center gap-3 px-4 py-2.5 mb-1.5 rounded-lg cursor-pointer transition-all duration-200 text-sm; /* Slightly smaller padding/margin/radius */
     @apply relative overflow-hidden text-muted-foreground hover:text-foreground;
-    @apply bg-white/50 dark:bg-white/5 backdrop-blur-sm;
-    @apply shadow-sm hover:shadow-md;
-    @apply transform hover:-translate-y-0.5;
-    @apply border border-border/5;
+    @apply bg-transparent hover:bg-secondary; /* Use secondary for hover */
+    /* Removed backdrop-blur, shadow, transform, border for cleaner look */
   }
 
-  .step-item::before {
-    content: "";
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-  }
-
-  .step-item:hover::before {
-    @apply opacity-100;
-  }
+  /* Removed ::before pseudo-element styling */
 
   .step-item.active {
-    @apply bg-primary text-primary-foreground;
-    @apply shadow-lg shadow-primary/20;
-    @apply transform -translate-y-0.5;
-    @apply border-none;
+    @apply bg-primary text-primary-foreground font-medium; /* Simpler active state */
+    /* Removed shadow, transform, border */
   }
 
   .step-item.active::after {
     content: "";
-    @apply absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white;
-    @apply shadow-sm;
+    @apply absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary-foreground; /* Use primary-foreground */
+    /* Removed shadow */
   }
 
   .step-item.completed {
-    @apply bg-[#22c55e] text-white;
-    @apply shadow-md shadow-[#22c55e]/20;
-    @apply border-none;
+    @apply bg-success/10 text-success-foreground font-medium; /* Use success color with opacity */
+    /* Removed shadow, border */
   }
 
   /* Icon styles */
-  .step-item i {
+  .step-item i { /* Assuming i tags are used for icons, adjust if using Lucide components directly */
     @apply text-lg;
   }
 
   .step-item.active i,
   .step-item.completed i {
-    @apply text-white;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    @apply text-inherit; /* Inherit color from parent */
+    filter: none; /* Remove drop shadow */
   }
 
   /* Step number and text */
@@ -152,85 +142,58 @@
   }
 
   .step-item .step-number {
-    @apply font-medium;
+    @apply font-medium text-xs text-muted-foreground/80; /* Smaller, slightly muted number */
+  }
+  .step-item.active .step-number,
+  .step-item.completed .step-number {
+     @apply text-inherit opacity-80; /* Inherit color, slightly transparent */
   }
 
-  /* Modern Category Styles */
+
+  /* Refined Category Styles */
   .step-category {
-    @apply px-3 py-2 mt-4 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground;
+    @apply px-4 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80; /* Adjusted padding and styling */
     @apply relative;
   }
 
-  .step-category::after {
-    content: "";
-    @apply absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary/20;
-  }
+  /* Removed ::after pseudo-element styling for category */
 
-  /* Modern Tool Card Styles */
+  /* Refined Tool Card & Prompt Card Styles */
   .tool-card,
   .prompt-card {
-    @apply p-6 border border-border/50 rounded-xl transition-all duration-300 flex flex-col bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 relative h-full;
-    @apply relative overflow-hidden;
+    @apply p-5 border border-border rounded-lg transition-all duration-200 flex flex-col bg-card shadow-sm hover:shadow-md hover:border-primary/50 relative h-full; /* Simplified padding, radius, border, bg, shadow, hover */
+    /* Removed backdrop-blur, complex hover transforms/borders, ::before pseudo-element */
   }
 
-  .tool-card::before,
-  .prompt-card::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-300;
-  }
-
-  .tool-card:hover::before,
-  .prompt-card:hover::before {
-    @apply opacity-100;
-  }
-
-  /* Modern Library Item Styles */
+  /* Refined Library Item Styles */
   .library-item {
-    @apply p-6 border-b border-border/50 cursor-pointer transition-all duration-300 hover:bg-primary/5 hover:translate-x-1 last:border-b-0;
-    @apply relative overflow-hidden;
+    @apply p-4 border-b border-border cursor-pointer transition-colors duration-200 hover:bg-secondary last:border-b-0; /* Simplified padding, border, hover */
+    /* Removed transform, ::before pseudo-element */
   }
 
-  .library-item::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-300;
-  }
-
-  .library-item:hover::before {
-    @apply opacity-100;
-  }
-
-  /* Modern Tab Button Styles */
+  /* Refined Tab Button Styles (Assuming these are applied to TabsTrigger in step-content.tsx) */
+  /* Note: The actual TabsTrigger component from shadcn/ui might override some of these. */
+  /* We rely on the styles applied directly in step-content.tsx for TabsTrigger */
+  /* Keeping this class definition commented out or removed if not directly used */
+  /*
   .tab-button {
-    @apply px-6 py-4 bg-transparent border-b-2 border-transparent font-medium text-muted-foreground transition-all duration-300 flex items-center gap-3 whitespace-nowrap hover:text-primary hover:bg-primary/5;
+    @apply px-4 py-2 rounded-full font-medium text-muted-foreground transition-colors duration-200 flex items-center gap-2 whitespace-nowrap hover:text-foreground hover:bg-secondary;
     @apply relative;
-  }
-
-  .tab-button::after {
-    content: "";
-    @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary/0 transition-all duration-300;
-  }
-
-  .tab-button:hover::after {
-    @apply bg-primary/30;
   }
 
   .tab-button.active {
-    @apply border-b-primary text-primary;
+     @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground;
   }
+  */
 
-  .tab-button.active::after {
-    @apply bg-primary;
-  }
+  /* Styles for TabsList and TabsTrigger are handled directly in step-content.tsx */
+  /* Example: className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground" */
+  /* No changes needed here for .tab-button as it seems unused. */
 
-  /* Modern Feedback Message Styles */
+  /* Refined Feedback Message Styles */
   .feedback-message {
-    @apply flex items-center gap-4 px-8 py-4 rounded-xl text-white font-medium shadow-lg opacity-0 transform translate-y-5 transition-all duration-300 w-fit backdrop-blur-sm;
-    @apply relative overflow-hidden;
-  }
-
-  .feedback-message::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 transition-opacity duration-300;
+    @apply flex items-center gap-3 px-5 py-3 rounded-lg font-medium shadow-md opacity-0 transform translate-y-3 transition-all duration-300 w-fit; /* Adjusted padding, radius, shadow, transform */
+    /* Removed backdrop-blur, ::before */
   }
 
   .feedback-message.show {
@@ -238,19 +201,19 @@
   }
 
   .feedback-message.success {
-    @apply bg-gradient-to-r from-success to-success/80;
+    @apply bg-success text-success-foreground; /* Solid background */
   }
 
   .feedback-message.error {
-    @apply bg-gradient-to-r from-destructive to-destructive/80;
+    @apply bg-destructive text-destructive-foreground; /* Solid background */
   }
 
   .feedback-message.warning {
-    @apply bg-gradient-to-r from-accent to-accent/80 text-accent-foreground;
+    @apply bg-accent text-accent-foreground; /* Solid background */
   }
 
   .feedback-message.info {
-    @apply bg-gradient-to-r from-primary to-primary/80;
+    @apply bg-primary text-primary-foreground; /* Solid background */
   }
 
   /* Modern Scrollbar Styles */
@@ -263,37 +226,28 @@
     display: none;
   }
 
-  /* Modern Button Styles */
-  .button {
-    @apply relative overflow-hidden transition-all duration-300;
+  /* Refined Button Styles (Applied via @apply in shadcn Button component) */
+  /* Removing the generic .button class as shadcn handles variants */
+  /* .button { ... } */
+  /* Removing ::before styling */
+
+  /* Refined Input Styles (Applied via @apply in shadcn Input component) */
+  /* Removing the generic .input class */
+  /* .input { ... } */
+
+  .input:focus { /* Keep focus style adjustment if needed, applied via @apply */
+    @apply ring-1 ring-ring ring-offset-1 ring-offset-background; /* More standard focus ring */
   }
 
-  .button::before {
+  /* Refined Progress Bar Styles */
+  .progress-bar { /* Assuming this class is used for a custom progress bar */
+    @apply relative overflow-hidden rounded-full bg-secondary; /* Use secondary for background */
+  }
+
+  .progress-bar::before { /* Style for the progress indicator itself */
     content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 transition-opacity duration-300;
-  }
-
-  .button:hover::before {
-    @apply opacity-100;
-  }
-
-  /* Modern Input Styles */
-  .input {
-    @apply relative overflow-hidden transition-all duration-300;
-  }
-
-  .input:focus {
-    @apply ring-2 ring-primary/20;
-  }
-
-  /* Modern Progress Bar Styles */
-  .progress-bar {
-    @apply relative overflow-hidden rounded-full bg-primary/10;
-  }
-
-  .progress-bar::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-primary to-primary/80 transition-all duration-300;
+    @apply absolute inset-y-0 left-0 bg-primary transition-all duration-300; /* Solid primary color */
+    /* The width will be set inline via style attribute */
   }
 }
 
@@ -331,4 +285,3 @@ html {
 * {
   scroll-behavior: smooth;
 }
-

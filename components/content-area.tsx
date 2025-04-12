@@ -16,49 +16,38 @@ export default function ContentArea({
   const currentStepData = steps.find((s) => s.id === currentStep) || null
 
   return (
-    <main className="flex-1 overflow-y-auto relative bg-background rounded-l-xl m-2 border-l border-t border-b border-border/20 shadow-sm">
-      {/* Decorative background pattern */}
-      <div className="absolute inset-0 -z-10 opacity-10">
-        <svg className="w-full h-full" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
-          <path 
-            d="M0 0h1000v1000H0z" 
-            fill="none"
-          />
-          <path 
-            d="M250 250h500v500H250z" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeDasharray="10 5"
-          />
-          <path 
-            d="M500 500h500v500H500z" 
-            stroke="currentColor" 
-            strokeWidth="1" 
-            strokeDasharray="5 5"
-          />
-        </svg>
-      </div>
-      <div className="sticky top-0 flex justify-between items-center pb-6 mb-8 border-b border-border/50 z-10 bg-background/80 backdrop-blur-sm pt-6 px-8">
-        <h2 className="text-3xl font-heading font-bold tracking-tight text-foreground/90">{currentStepData?.title || "Loading..."}</h2>
-        <div className="flex gap-4">
+    /* Make main container the card */
+    <main className="flex-1 overflow-y-auto relative bg-card rounded-lg border border-border flex flex-col"> {/* Use bg-card, add flex flex-col */}
+      {/* Decorative background pattern - removed */}
+      {/* <div className="absolute inset-0 -z-10 opacity-[0.02] dark:opacity-[0.03]"> */}
+        {/* Simplified SVG or removed if too distracting */}
+         {/* <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M11 10h1v1h-1v-1zm1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zM10 11h1v1h-1v-1zm1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1zm-1 1h1v1h-1v-1z" fill="currentColor" fillOpacity="0.4" fillRule="evenodd"></path></svg> */} {/* Corrected properties */}
+      {/* </div> */}
+      {/* Simplified sticky header - Now part of the flex column */}
+      <div className="sticky top-0 flex justify-between items-center p-4 border-b border-border z-10 bg-card/95 backdrop-blur-sm flex-shrink-0"> {/* Use bg-card, add flex-shrink-0 */}
+        <h2 className="text-xl font-heading font-semibold tracking-tight text-foreground">{currentStepData?.title || "Loading..."}</h2>
+        <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm" /* Adjusted size */
             onClick={prevStep}
-            className={`${currentStep <= 1 ? "hidden" : "inline-flex"} h-12 px-6 text-base bg-secondary/80 hover:bg-secondary/90 backdrop-blur-sm`}
+            className={`${currentStep <= 1 ? "hidden" : "inline-flex"}`} /* Removed explicit bg/hover/blur */
           >
-            <ArrowLeft className="mr-2 h-5 w-5" /> Previous
+            <ArrowLeft className="mr-1.5 h-4 w-4" /> Previous {/* Adjusted icon size/margin */}
           </Button>
           <Button
+            variant="default" /* Explicitly set default variant */
+            size="sm" /* Adjusted size */
             onClick={nextStep}
-            className={`${currentStep > steps.length ? "hidden" : "inline-flex"} h-12 px-6 text-base bg-primary/90 hover:bg-primary/100 backdrop-blur-sm`}
+            className={`${currentStep > steps.length ? "hidden" : "inline-flex"}`} /* Removed explicit bg/hover/blur */
           >
             {currentStep === steps.length ? (
               <>
-                Finish Workflow <CheckCheck className="ml-2 h-5 w-5" />
+                Finish Workflow <CheckCheck className="ml-1.5 h-4 w-4" /> {/* Adjusted icon size/margin */}
               </>
             ) : (
               <>
-                Next Step <ArrowRight className="ml-2 h-5 w-5" />
+                Next Step <ArrowRight className="ml-1.5 h-4 w-4" /> {/* Adjusted icon size/margin */}
               </>
             )}
           </Button>
@@ -66,12 +55,9 @@ export default function ContentArea({
         </div>
       </div>
 
-      <div className="relative p-4">
-        {/* Content card */}
-        <div className="bg-background rounded-xl p-6 border border-border/20">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 -z-10" />
-          <StepContent stepData={currentStepData} onOpenAddTool={onOpenAddTool} onOpenPromptForm={onOpenPromptForm} />
-        </div>
+      {/* Content area - Takes remaining space and scrolls */}
+      <div className="p-6 overflow-y-auto scrollbar-none flex-grow"> {/* Added flex-grow, overflow, padding */}
+        <StepContent stepData={currentStepData} onOpenAddTool={onOpenAddTool} onOpenPromptForm={onOpenPromptForm} />
       </div>
     </main>
   )

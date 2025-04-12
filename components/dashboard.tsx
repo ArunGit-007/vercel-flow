@@ -33,11 +33,13 @@ export default function Dashboard() {
   const isWorkflowComplete = currentStep > steps.length
 
   return (
-    <div className="container max-w-[1800px] mx-auto px-6">
+    <div className="container max-w-[1800px] mx-auto px-4 md:px-6"> {/* Adjusted padding */}
+      {/* Simplified outer container */}
       <div
-        className={`flex rounded-2xl shadow-lg overflow-hidden border bg-card mt-8 mb-8 min-h-[calc(100vh-4rem)] relative ${isWorkflowComplete ? "hidden" : ""}`}
+        className={`flex mt-6 mb-6 min-h-[calc(100vh-3rem)] relative ${isWorkflowComplete ? "hidden" : ""}`} /* Removed rounded, shadow, border, bg, adjusted margin/min-height */
       >
-        <div className="flex-1 flex rounded-xl overflow-hidden m-2 gap-2 bg-background/50">
+        {/* Removed styling from inner container, kept flex layout and gap */}
+        <div className="flex-1 flex gap-2">
           <Sidebar
             onOpenToolLibrary={() => toggleModal("toolLibrary", true)}
             onOpenPromptLibrary={() => toggleModal("promptLibrary", true)}

@@ -188,119 +188,74 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`${
+      className={`${ // Use template literal for cleaner className construction
         isSidebarCollapsed ? "w-[var(--sidebar-width-collapsed)]" : "w-[var(--sidebar-width)]"
-      } flex-shrink-0 p-6 relative transition-all duration-300 border-r border-border/20 bg-background/95 backdrop-blur-sm rounded-r-xl shadow-sm`}
+      } flex-shrink-0 relative transition-all duration-300 bg-card rounded-lg border border-border flex flex-col`} // Ensure all classes are within the template literal
     >
+      {/* Collapse/Expand Button */}
       <button
-        className="absolute top-1/2 -right-4 transform -translate-y-1/2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer z-10 shadow-lg border-none text-sm transition-all duration-300 hover:scale-110 hover:shadow-primary/30"
+        className="absolute top-1/2 -right-4 transform -translate-y-1/2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center cursor-pointer z-20 shadow-md border-none text-sm transition-all duration-300 hover:scale-105 hover:shadow-md"
         onClick={toggleSidebar}
         aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
       >
         {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
       </button>
 
-      <div className="bg-gradient-to-br from-muted/30 to-muted/10 rounded-2xl overflow-y-auto h-[calc(100vh-8rem)] shadow-inner relative scrollbar-none border border-border/50">
-        <div className="relative">
-          {/* Header Background with Gradient Overlay */}
-          <div className="absolute inset-0 h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent pointer-events-none" />
-
-          {/* Main Header Content */}
-          <div className="px-6 pt-6 pb-4 relative">
-            {/* Profile Section */}
-            <div className="flex flex-col items-center">
-              {/* Profile Image Container */}
-              <div
-                className="relative mb-4 cursor-pointer group"
-                onClick={onOpenProfileModal}
-                title={`Edit Website Profile & Settings ${profileData.ourDomain ? "(" + profileData.ourDomain + ")" : ""}`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-110 -z-10" />
-                {/* Use next/image */}
-                <Image
-                  src={profileData.logoUrl || DEFAULT_LOGO_SVG}
-                  alt="Profile Logo" // Added descriptive alt text
-                  width={80} // Base width (w-20)
-                  height={80} // Base height (h-20)
-                  className={`${
-                    isSidebarCollapsed ? "w-14 h-14" : "w-20 h-20"
-                  } rounded-2xl object-cover shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-primary/20 border-2 border-background`}
-                  // onError removed, next/image handles errors differently
-                />
-                {/* Decorative Ring */}
-                <div className="absolute -inset-1 bg-gradient-to-br from-primary/50 to-primary/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-all duration-300" />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 mt-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="px-4 py-2 bg-secondary/80 hover:bg-secondary/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenToolLibrary();
-                  }}
-                  title="Tool Library"
-                >
-                  <PenToolIcon className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="px-4 py-2 bg-secondary/80 hover:bg-secondary/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenPromptLibrary();
-                  }}
-                  title="Prompt Library"
-                >
-                  <FileText className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="px-4 py-2 bg-secondary/80 hover:bg-secondary/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onResetWorkflow();
-                  }}
-                  title="Reset Workflow"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className={`flex items-center mt-6 gap-3 ${isSidebarCollapsed ? "justify-center" : ""}`}>
-              <div className="flex-1 h-1.5 bg-primary/5 rounded-full overflow-hidden backdrop-blur-sm">
-                <div
-                  className="h-full bg-gradient-to-r from-primary/90 to-primary/70 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                >
-                  <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                </div>
-              </div>
-              {!isSidebarCollapsed && (
-                <div className="text-xs font-medium text-primary/80">{Math.round(progress)}%</div>
-              )}
-            </div>
+      {/* Header Section */}
+      <div className="px-4 pt-4 pb-4 relative flex-shrink-0"> {/* Padding for header content */}
+        <div className="flex flex-col items-center">
+          {/* Profile Image */}
+          <div
+            className="relative mb-4 cursor-pointer group"
+            onClick={onOpenProfileModal}
+            title={`Edit Website Profile & Settings ${profileData.ourDomain ? "(" + profileData.ourDomain + ")" : ""}`}
+          >
+            <Image
+              src={profileData.logoUrl || DEFAULT_LOGO_SVG}
+              alt="Profile Logo"
+              width={isSidebarCollapsed ? 56 : 80}
+              height={isSidebarCollapsed ? 56 : 80}
+              className={`${
+                isSidebarCollapsed ? "w-14 h-14" : "w-20 h-20"
+              } rounded-lg object-cover shadow-md transition-all duration-300 group-hover:scale-105 border border-border`}
+            />
+          </div>
+          {/* Action Buttons */}
+          <div className={`flex gap-1 mt-3 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onOpenToolLibrary(); }} title="Tool Library">
+              <PenToolIcon className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onOpenPromptLibrary(); }} title="Prompt Library">
+              <FileText className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onResetWorkflow(); }} title="Reset Workflow">
+              <RotateCcw className="w-5 h-5" />
+            </Button>
           </div>
         </div>
-
-        {/* Steps list */}
-        <div className="p-4 overflow-y-auto max-h-[calc(100vh-20rem)] scrollbar-none">
-          <StepsList
-            steps={allSteps}
-            currentStep={currentStep}
-            showStep={showStep}
-            isCollapsed={isSidebarCollapsed}
-            stepIcons={stepIcons}
-          />
+        {/* Progress Bar */}
+        <div className={`flex items-center mt-4 gap-2 ${isSidebarCollapsed ? "justify-center" : ""}`}>
+          <div className="flex-1 h-1 bg-secondary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {!isSidebarCollapsed && (
+            <div className="text-xs font-medium text-muted-foreground">{Math.round(progress)}%</div>
+          )}
         </div>
+      </div>
+
+      {/* Steps List Section - Takes remaining space and scrolls */}
+      <div className="px-2 py-2 overflow-y-auto scrollbar-none flex-grow"> {/* Padding for steps list */}
+        <StepsList
+          steps={allSteps}
+          currentStep={currentStep}
+          showStep={showStep}
+          isCollapsed={isSidebarCollapsed}
+          stepIcons={stepIcons}
+        />
       </div>
     </aside>
   )
@@ -356,15 +311,15 @@ function StepsList({
               title={step.title}
             >
               <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-                <div className={`flex-shrink-0 ${
-                  isCollapsed ? "p-2 hover:bg-muted/50 rounded-lg transition-colors" : ""
+                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md ${ /* Ensure consistent icon container size */
+                  isCollapsed ? "hover:bg-secondary" : "" /* Use secondary for hover */
                 }`}>
                   {isCompleted
-                    ? stepIcons["ri-check-line"]
-                    : stepIcons[step.icon] || stepIcons["ri-checkbox-blank-circle-line"]}
+                    ? stepIcons["ri-check-line"] // Check icon already defined
+                    : stepIcons[step.icon] || stepIcons["ri-checkbox-blank-circle-line"]} {/* Default icon */}
                 </div>
                 {!isCollapsed && (
-                  <span className="step-number">Step {step.id}</span>
+                  <span className="step-number">Step {step.id}</span> /* Reverted to show Step number */
                 )}
               </div>
             </div>

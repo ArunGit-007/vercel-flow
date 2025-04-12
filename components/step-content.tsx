@@ -44,65 +44,67 @@ export default function StepContent({
   return (
     <div>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6 bg-background/80 rounded-full p-1 w-full justify-start h-auto flex-wrap gap-1">
-          <TabsTrigger 
-            value="description" 
-            className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+        {/* Simplified TabsList */}
+        <TabsList className="mb-4 bg-secondary rounded-lg p-1 inline-flex flex-wrap gap-1">
+          <TabsTrigger
+            value="description"
+            className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
           >
-            <Info className="w-4 h-4 mr-2" /> Description & Inputs
+            <Info className="w-4 h-4 mr-1.5" /> Description & Inputs {/* Adjusted margin */}
           </TabsTrigger>
 
           {hasPrompts && (
-            <TabsTrigger 
-              value="prompts" 
-              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            <TabsTrigger
+              value="prompts"
+              className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
-              <FileText className="w-4 h-4 mr-2" /> Prompts ({stepPrompts.length})
+              <FileText className="w-4 h-4 mr-1.5" /> Prompts ({stepPrompts.length}) {/* Adjusted margin */}
             </TabsTrigger>
           )}
 
           {(hasTools || stepId === 8) && (
-            <TabsTrigger 
-              value="tools" 
-              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            <TabsTrigger
+              value="tools"
+              className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
-              <Tool className="w-4 h-4 mr-2" />
+              <Tool className="w-4 h-4 mr-1.5" /> {/* Adjusted margin */}
               Tools {stepId !== 8 ? `(${(stepData.tools || []).length})` : ""}
               {stepId === 8 ? "& Images" : ""}
             </TabsTrigger>
           )}
 
           {hasSearch && (
-            <TabsTrigger 
-              value="search" 
-              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            <TabsTrigger
+              value="search"
+              className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
-              <Search className="w-4 h-4 mr-2" /> Quick Search
+              <Search className="w-4 h-4 mr-1.5" /> Quick Search {/* Adjusted margin */}
             </TabsTrigger>
           )}
 
           {hasOutputs && (
-            <TabsTrigger 
-              value="outputs" 
-              className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            <TabsTrigger
+              value="outputs"
+              className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
-              <Save className="w-4 h-4 mr-2" /> Outputs
+              <Save className="w-4 h-4 mr-1.5" /> Outputs {/* Adjusted margin */}
             </TabsTrigger>
           )}
         </TabsList>
 
-        <TabsContent value="description" className="bg-card rounded-xl p-6 border shadow-sm mt-0 animate-fade-in">
+        {/* Simplified TabsContent */}
+        <TabsContent value="description" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
           <StepDescription stepData={stepData} primaryKeyword={primaryKeyword} profileData={profileData} />
         </TabsContent>
 
         {hasPrompts && (
-          <TabsContent value="prompts" className="bg-card rounded-xl p-6 border shadow-sm mt-0 animate-fade-in">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold flex items-center">
-                <FileText className="w-5 h-5 mr-2 text-primary" /> Workflow Prompts
+          <TabsContent value="prompts" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
+            <div className="flex justify-between items-center mb-3"> {/* Adjusted margin */}
+              <h3 className="text-lg font-semibold flex items-center"> {/* Adjusted size */}
+                <FileText className="w-4 h-4 mr-2 text-primary" /> Workflow Prompts {/* Adjusted icon size */}
               </h3>
-              <Button onClick={onOpenPromptForm} size="sm">
-                <Plus className="w-4 h-4 mr-2" /> Add New Prompt
+              <Button onClick={onOpenPromptForm} size="sm" variant="outline"> {/* Added variant */}
+                <Plus className="w-4 h-4 mr-1.5" /> Add New Prompt {/* Adjusted margin */}
               </Button>
             </div>
             <StepPrompts stepData={stepData} />
@@ -110,13 +112,13 @@ export default function StepContent({
         )}
 
         {(hasTools || stepId === 8) && (
-          <TabsContent value="tools" className="bg-card rounded-xl p-6 border shadow-sm mt-0 animate-fade-in">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold flex items-center">
-                <Tool className="w-5 h-5 mr-2 text-primary" /> Recommended Tools
+          <TabsContent value="tools" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
+            <div className="flex justify-between items-center mb-3"> {/* Adjusted margin */}
+              <h3 className="text-lg font-semibold flex items-center"> {/* Adjusted size */}
+                <Tool className="w-4 h-4 mr-2 text-primary" /> Recommended Tools {/* Adjusted icon size */}
               </h3>
-              <Button onClick={onOpenAddTool} size="sm">
-                <Plus className="w-4 h-4 mr-2" /> Add Tool
+              <Button onClick={onOpenAddTool} size="sm" variant="outline"> {/* Added variant */}
+                <Plus className="w-4 h-4 mr-1.5" /> Add Tool {/* Adjusted margin */}
               </Button>
             </div>
             <StepTools stepData={stepData} />
@@ -124,13 +126,13 @@ export default function StepContent({
         )}
 
         {hasSearch && (
-          <TabsContent value="search" className="bg-card rounded-xl p-6 border shadow-sm mt-0 animate-fade-in">
+          <TabsContent value="search" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
             <StepSearch stepData={stepData} />
           </TabsContent>
         )}
 
         {hasOutputs && (
-          <TabsContent value="outputs" className="bg-card rounded-xl p-6 border shadow-sm mt-0 animate-fade-in">
+          <TabsContent value="outputs" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
             <StepOutputs stepData={stepData} />
           </TabsContent>
         )}
