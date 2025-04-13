@@ -1,23 +1,26 @@
 "use client"
 
-import { useState } from "react"
-import { useWorkflow, type Step } from "@/hooks/use-workflow" // Import Step type
-import { useFeedback } from "@/hooks/use-feedback"
-import { Button } from "@/components/ui/button"
-import { StarIcon, Edit, Trash2, Copy, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"
+import { useState } from "react";
+import { useWorkflow, type Step, type Prompt } from "@/hooks/use-workflow"; // Import Step and Prompt types
+import { useResourceLibrary } from "@/hooks/useResourceLibrary"; // Import useResourceLibrary
+import { useFeedback } from "@/hooks/use-feedback";
+import { Button } from "@/components/ui/button";
+import { StarIcon, Copy, ChevronDown, ChevronUp, ExternalLink } from "lucide-react"; // Removed Edit, Trash2
 
 export default function StepPrompts({ stepData }: { stepData: Step }) { // Use Step type
-  const { promptTemplates, replaceOutputPlaceholders } = useWorkflow()
-  const { showFeedback } = useFeedback()
-  const [expandedPrompts, setExpandedPrompts] = useState<Record<string, boolean>>({})
+  const { replaceOutputPlaceholders } = useWorkflow(); // Only need placeholder replacement
+  const { getPromptsForStep } = useResourceLibrary(); // Only need assigned prompts
+  const { showFeedback } = useFeedback();
+  const [expandedPrompts, setExpandedPrompts] = useState<Record<string, boolean>>({});
 
-  const stepId = stepData.id
-  const stepPrompts = promptTemplates[String(stepId)] || []
+  const stepId = stepData.id;
+  const assignedPrompts = getPromptsForStep(stepId); // Get assigned prompts
+  // const assignedTools = getToolsForStep(stepId); // Remove - not needed here
 
-  if (stepPrompts.length === 0) {
+  if (assignedPrompts.length === 0) {
     return (
-      <p className="text-muted-foreground">No prompts defined for this step. Click 'Add New Prompt' to create one.</p>
-    )
+      <p className="text-muted-foreground">No prompts assigned to this step. Assign prompts in the Resource Library.</p> // Updated message
+    );
   }
 
   const togglePromptContent = (promptId: number) => {
@@ -40,45 +43,22 @@ export default function StepPrompts({ stepData }: { stepData: Step }) { // Use S
   }
 
   // Sort prompts: favorites first, then alphabetically
-  const sortedPrompts = [...stepPrompts].sort((a, b) => {
-    if (a.favorite && !b.favorite) return -1
-    if (!a.favorite && b.favorite) return 1
-    return a.title.localeCompare(b.title)
-  })
+  const sortedPrompts = [...assignedPrompts].sort((a, b) => { // Sort assignedPrompts
+    if (a.favorite && !b.favorite) return -1;
+    if (!a.favorite && b.favorite) return 1;
+    return a.title.localeCompare(b.title);
+  });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {sortedPrompts.map((prompt) => {
-        const dynamicPromptContent = replaceOutputPlaceholders(prompt.content)
-        const isExpanded = expandedPrompts[prompt.id]
-        const firstToolUrl = stepData.tools && stepData.tools.length > 0 ? stepData.tools[0].url : null
+        const dynamicPromptContent = replaceOutputPlaceholders(prompt.content);
+        const isExpanded = expandedPrompts[prompt.id];
+        // const firstToolUrl = assignedTools.length > 0 ? assignedTools[0].url : null; // Remove tool URL logic
 
         return (
-          <div key={prompt.id} className="prompt-card animate-fade-in">
-            <div className="absolute top-2 right-2 flex space-x-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 rounded-full opacity-60 hover:opacity-100 hover:bg-background"
-                onClick={() => {
-                  /* Edit prompt */
-                }}
-                title="Edit Prompt"
-              >
-                <Edit className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 rounded-full opacity-60 hover:opacity-100 hover:bg-background"
-                onClick={() => {
-                  /* Delete prompt */
-                }}
-                title="Delete Prompt"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+          <div key={prompt.id} className="prompt-card animate-fade-in relative"> {/* Added relative positioning */}
+            {/* Removed Edit and Delete buttons */}
 
             <div
               className="flex items-center justify-between cursor-pointer"
@@ -117,13 +97,7 @@ export default function StepPrompts({ stepData }: { stepData: Step }) { // Use S
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Prompt
               </Button>
 
-              {firstToolUrl && (
-                <Button variant="outline" size="sm" asChild className="flex-1">
-                  <a href={firstToolUrl} target="_blank" rel="noopener noreferrer">
-                    Visit Tool <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
-                  </a>
-                </Button>
-              )}
+              {/* Removed Visit Tool button */}
             </div>
           </div>
         )

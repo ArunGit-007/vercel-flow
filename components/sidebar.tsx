@@ -19,8 +19,6 @@ import {
   FlaskRoundIcon as Flask,
   FileIcon as FileList,
   Edit,
-  // Palette, // Removed unused import
-  // Pencil, // Removed unused import
   LucideImage, // Renamed Image import to avoid conflict with next/image
   MessageSquare,
   FileCheck,
@@ -32,21 +30,24 @@ import {
   Shield,
   Feather,
   LineChart,
-} from "lucide-react"
+  Library, // Add Library icon
+} from "lucide-react";
 
 export default function Sidebar({
-  onOpenToolLibrary,
-  onOpenPromptLibrary,
+  // onOpenToolLibrary, // Remove prop
+  // onOpenPromptLibrary, // Remove prop
+  onOpenResourceLibrary, // Add new prop
   onResetWorkflow,
   onOpenProfileModal,
 }: {
-  onOpenToolLibrary: () => void
-  onOpenPromptLibrary: () => void
-  onResetWorkflow: () => void
-  onOpenProfileModal: () => void
+  // onOpenToolLibrary: () => void; // Remove prop type
+  // onOpenPromptLibrary: () => void; // Remove prop type
+  onOpenResourceLibrary: () => void; // Add new prop type
+  onResetWorkflow: () => void;
+  onOpenProfileModal: () => void;
 }) {
-  const { currentStep, showStep } = useWorkflow() // Removed unused 'steps'
-  const { profileData } = useProfile()
+  const { currentStep, showStep } = useWorkflow(); // Removed unused 'steps'
+  const { profileData } = useProfile();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useLocalStorage("sidebarCollapsed", false)
   const [progress, setProgress] = useState(0)
 
@@ -72,105 +73,20 @@ export default function Sidebar({
     "ri-check-line": <CheckCircle className="w-5 h-5" />
   }
 
-  // Complete list of steps from the original HTML
+  // Updated list of steps to match the new 11-step workflow
   const allSteps = [
-    {
-      id: 1,
-      title: "Competitor & Keyword Research",
-      icon: "ri-search-eye-line",
-      category: "Research & Planning",
-    },
-    {
-      id: 2,
-      title: "Topic & Headline Brainstorm",
-      icon: "ri-lightbulb-flash-line",
-      category: "Research & Planning",
-    },
-    {
-      id: 3,
-      title: "AI Research (Perplexity)",
-      icon: "ri-robot-2-line",
-      category: "Research & Planning",
-    },
-    {
-      id: 4,
-      title: "Deep Research (Gemini/Grok)",
-      icon: "ri-flask-line",
-      category: "Research & Planning",
-    },
-    {
-      id: 5,
-      title: "Outline Creation (NotebookLM)",
-      icon: "ri-file-list-3-line",
-      category: "Content Creation",
-    },
-    {
-      id: 6,
-      title: "AI-Assisted Drafting (Claude)",
-      icon: "ri-quill-pen-line",
-      category: "Content Creation",
-    },
-    {
-      id: 7,
-      title: "Initial SEO Optimization",
-      icon: "ri-seo-line",
-      category: "Content Creation",
-    },
-    {
-      id: 8,
-      title: "Multimedia & Stock Images",
-      icon: "ri-image-line",
-      category: "Content Creation",
-    },
-    {
-      id: 9,
-      title: "Engagement Elements (FAQs/CTAs)",
-      icon: "ri-user-voice-line",
-      category: "Content Creation",
-    },
-    {
-      id: 10,
-      title: "Human Edit: Grammar & Mechanics",
-      icon: "ri-edit-line",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 11,
-      title: "Human Edit: Fact-Checking & Refinement",
-      icon: "ri-shield-check-line",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 12,
-      title: "Plagiarism Check",
-      icon: "ri-file-shield-2-line",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 13,
-      title: "Final SEO & Technical Check",
-      icon: "ri-settings-3-line",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 14,
-      title: "Code Formatting & Cleanup",
-      icon: "ri-code-s-slash-line",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 15,
-      title: "Link Analysis & Optimization",
-      icon: "ri-link-m",
-      category: "Refinement & Optimization",
-    },
-    {
-      id: 16,
-      title: "Final Review & Publish Readiness",
-      icon: "ri-check-double-line",
-      category: "Refinement & Optimization",
-    }
-  ]
+    { id: 1, title: "Keyword & Competitor Research", icon: "ri-search-eye-line", category: "Research & Planning" },
+    { id: 2, title: "Topic & Headline Brainstorm", icon: "ri-lightbulb-flash-line", category: "Research & Planning" },
+    { id: 3, title: "AI Research", icon: "ri-robot-2-line", category: "Research & Planning" },
+    { id: 4, title: "Outline Creation", icon: "ri-file-list-3-line", category: "Content Creation" },
+    { id: 5, title: "AI Drafting", icon: "ri-quill-pen-line", category: "Content Creation" },
+    { id: 6, title: "Initial SEO & Multimedia", icon: "ri-image-line", category: "Content Creation" },
+    { id: 7, title: "Engagement Elements", icon: "ri-user-voice-line", category: "Content Creation" },
+    { id: 8, title: "Human Edit: Grammar & Style", icon: "ri-edit-line", category: "Refinement & Optimization" },
+    { id: 9, title: "Fact-Checking & Plagiarism", icon: "ri-shield-check-line", category: "Refinement & Optimization" },
+    { id: 10, title: "Final Technical Checks", icon: "ri-settings-3-line", category: "Refinement & Optimization" },
+    { id: 11, title: "Publish Readiness", icon: "ri-check-double-line", category: "Refinement & Optimization" }
+  ];
 
   useEffect(() => {
     const completedSteps = Math.max(0, currentStep - 1)
@@ -222,12 +138,11 @@ export default function Sidebar({
           </div>
           {/* Action Buttons */}
           <div className={`flex gap-1 mt-3 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onOpenToolLibrary(); }} title="Tool Library">
-              <PenToolIcon className="w-5 h-5" />
+            {/* Replace Tool and Prompt library buttons with Resource Library button */}
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onOpenResourceLibrary(); }} title="Resource Library">
+              <Library className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onOpenPromptLibrary(); }} title="Prompt Library">
-              <FileText className="w-5 h-5" />
-            </Button>
+            {/* Keep Reset Workflow button */}
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={(e) => { e.stopPropagation(); onResetWorkflow(); }} title="Reset Workflow">
               <RotateCcw className="w-5 h-5" />
             </Button>
@@ -302,26 +217,33 @@ function StepsList({
                 {currentCategory}
               </div>
             )}
+            {/* Add light mode specific styles for completed steps */}
             <div
-              className={`step-item group ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""} ${
-                isCollapsed ? "justify-center" : ""
+              className={`step-item group rounded-md px-3 py-2 flex items-center text-sm font-medium cursor-pointer transition-colors hover:bg-secondary hover:text-foreground ${
+                isActive
+                  ? "bg-primary text-primary-foreground" // Active state
+                  : isCompleted
+                    ? "text-muted-foreground hover:text-foreground" // Completed state (light/dark) - Removed opacity-75
+                    : "text-muted-foreground hover:text-foreground" // Default state
+              } ${
+                isCollapsed ? "justify-center px-2" : "gap-3" // Adjust padding/gap when collapsed
               }`}
               onClick={() => showStep(step.id)}
               data-step-id={step.id}
-              title={step.title}
+              title={step.title} // Keep title attribute
             >
-              <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md ${ /* Ensure consistent icon container size */
-                  isCollapsed ? "hover:bg-secondary" : "" /* Use secondary for hover */
-                }`}>
-                  {isCompleted
-                    ? stepIcons["ri-check-line"] // Check icon already defined
-                    : stepIcons[step.icon] || stepIcons["ri-checkbox-blank-circle-line"]} {/* Default icon */}
-                </div>
-                {!isCollapsed && (
-                  <span className="step-number">Step {step.id}</span> /* Reverted to show Step number */
-                )}
+              {/* Icon container - Ensure icon color contrasts */}
+              <div className={`flex-shrink-0 w-6 h-6 flex items-center justify-center ${
+                  isCompleted && !isActive ? "text-green-600 dark:text-green-500" : "" // Explicit color for completed check icon
+              }`}>
+                {isCompleted
+                  ? stepIcons["ri-check-line"] // Check icon
+                  : stepIcons[step.icon] || stepIcons["ri-checkbox-blank-circle-line"]} {/* Default/Step icon */}
               </div>
+              {/* Text - Hidden when collapsed */}
+              {!isCollapsed && (
+                 <span className="flex-grow truncate">Step {step.id}</span> // Reverted to show Step number
+              )}
             </div>
           </div>
         )

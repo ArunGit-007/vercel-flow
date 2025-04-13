@@ -3,17 +3,11 @@ import { useWorkflow } from "@/hooks/use-workflow"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import StepContent from "@/components/step-content"
-import { ArrowLeft, ArrowRight, CheckCheck } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCheck } from "lucide-react";
 
-export default function ContentArea({
-  onOpenAddTool,
-  onOpenPromptForm,
-}: {
-  onOpenAddTool: () => void
-  onOpenPromptForm: () => void
-}) {
-  const { currentStep, steps, nextStep, prevStep } = useWorkflow()
-  const currentStepData = steps.find((s) => s.id === currentStep) || null
+export default function ContentArea() { // Remove props from function signature
+  const { currentStep, steps, nextStep, prevStep } = useWorkflow();
+  const currentStepData = steps.find((s) => s.id === currentStep) || null;
 
   return (
     /* Make main container the card */
@@ -57,7 +51,7 @@ export default function ContentArea({
 
       {/* Content area - Takes remaining space and scrolls */}
       <div className="p-6 overflow-y-auto scrollbar-none flex-grow"> {/* Added flex-grow, overflow, padding */}
-        <StepContent stepData={currentStepData} onOpenAddTool={onOpenAddTool} onOpenPromptForm={onOpenPromptForm} />
+        <StepContent stepData={currentStepData} /> {/* Remove props passed to StepContent */}
       </div>
     </main>
   )

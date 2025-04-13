@@ -1,9 +1,9 @@
 "use client"
 
-import type React from "react"
-
-import { createContext, useContext, useState, useEffect } from "react"
-import { useFeedback } from "@/hooks/use-feedback"
+import type React from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react"; // Add useCallback
+import { useFeedback } from "@/hooks/use-feedback";
+import { useProfile, ProfileData } from "@/hooks/use-profile"; // Import useProfile and ProfileData
 
 // Define interfaces (and export them)
 export interface Tool {
@@ -31,7 +31,7 @@ export interface Step {
   title: string
   icon: string
   category: string
-  tools?: Tool[]
+  // tools?: Tool[] // Remove default tools from step definition - will be managed by assignments
   inputField?: InputField[]
   outputFields?: OutputField[]
   description: string
@@ -52,316 +52,186 @@ type WorkflowContextType = {
   stepOutputs: Record<number, Record<string, any>>
   primaryKeyword: string
   blogOutlineText: string
-  promptTemplates: Record<string, Prompt[]>
+  // promptTemplates: Record<string, Prompt[]> // Prompt definitions will be managed elsewhere
+  assignedPrompts: Record<number, Prompt[]> // State for assigned prompts per step
+  assignedTools: Record<number, Tool[]> // State for assigned tools per step
   showStep: (stepId: number) => void
   nextStep: () => void
   prevStep: () => void
   autoSaveOutput: (stepId: number, outputName: string, outputValue: any) => void
   updatePrimaryKeyword: (keyword: string, stepId: number) => void
   resetWorkflow: () => void
-  addTool: (stepId: number, tool: Tool) => void
-  removeTool: (stepId: number, toolIndex: number) => void
-  addPrompt: (stepId: number, prompt: Prompt) => void
-  deletePrompt: (stepId: number, promptId: number) => void
+  // addTool: (stepId: number, tool: Tool) => void // Remove - managed by Resource Library
+  // removeTool: (stepId: number, toolIndex: number) => void // Remove - managed by Resource Library
+  // addPrompt: (stepId: number, prompt: Prompt) => void // Remove - managed by Resource Library
+  // deletePrompt: (stepId: number, promptId: number) => void // Remove - managed by Resource Library
   replaceOutputPlaceholders: (content: string) => string
 }
 
 // Create the context
-const WorkflowContext = createContext<WorkflowContextType | undefined>(undefined)
+const WorkflowContext = createContext<WorkflowContextType | undefined>(undefined);
 
-// Define the workflow steps
-const workflowSteps = [
-  // Step 1
+// Define the NEW 11-step workflow structure
+const workflowSteps: Omit<Step, 'tools'>[] = [
+  // Step 1: Keyword & Competitor Research (Old 1)
   {
     id: 1,
-    title: "Competitor & Keyword Research",
+    title: "Keyword & Competitor Research",
     icon: "ri-search-eye-line",
     category: "Research & Planning",
-    tools: [
-      { name: "Google Keyword Planner", url: "https://ads.google.com/aw/keywordplanner/home", category: "Keyword Research (Free)" },
-      { name: "SEMrush", url: "https://www.semrush.com/", category: "Keyword Research & SEO Suite (Premium)" },
-      { name: "Ahrefs Keywords Explorer", url: "https://ahrefs.com/keywords-explorer", category: "Keyword Research & SEO Suite (Premium)" },
-      { name: "SpyFu", url: "https://www.spyfu.com/", category: "Competitor Analysis (Premium)" },
-      { name: "Ubersuggest", url: "https://neilpatel.com/ubersuggest/", category: "Keyword Research (Freemium)" },
-      { name: "Moz Keyword Explorer", url: "https://moz.com/explorer", category: "Keyword Research (Premium)" }
-    ],
     inputField: [
       { name: "primaryKeyword", label: "Selected Primary Keyword", placeholder: "Enter the main keyword for the article" },
       { name: "competitorWebsiteUrls", label: "Competitor URLs (Add up to 5 for this keyword)", placeholder: "e.g., competitor-site.com", isMultiInput: true, maxItems: 5 }
     ],
     description: "Analyze competitor URLs ranking for the target keyword using tools like Ahrefs or SEMrush. Identify content gaps, angles, and search intent. Extract LSI keywords. Finalize your primary keyword and define specific competitor URLs below. **Note:** Your website domain and general competitor domains can be set in Profile Settings."
   },
-  // Step 2
+  // Step 2: Topic & Headline Brainstorm (Old 2)
   {
     id: 2,
     title: "Topic & Headline Brainstorm",
     icon: "ri-lightbulb-flash-line",
     category: "Research & Planning",
-    tools: [
-      { name: "AnswerThePublic", url: "https://answerthepublic.com/", category: "Topic Ideas (Freemium)" },
-      { name: "BuzzSumo", url: "https://buzzsumo.com/", category: "Topic Research & Trends (Premium)" },
-      { name: "Google Trends", url: "https://trends.google.com/trends/", category: "Trend Analysis (Free)" },
-      { name: "CoSchedule Headline Analyzer", url: "https://coschedule.com/headline-analyzer", category: "Headline Analysis (Free)" },
-      { name: "Sharethrough Headline Analyzer", url: "https://headlines.sharethrough.com/analyzer", category: "Headline Analysis (Free)" }
-    ],
-    description: "Brainstorm compelling blog topics and engaging headlines around your primary keyword. Use idea generators and analyze trending content. Draft several headlines and use analyzers to assess effectiveness. **Action:** Select a blog topic and a working headline.",
     outputFields: [
       { name: "selectedTopic", label: "Selected Blog Topic", placeholder: "Enter the chosen topic..." },
       { name: "workingHeadline", label: "Working Headline", placeholder: "Enter the draft headline..." }
-    ]
+    ],
+    description: "Brainstorm compelling blog topics and engaging headlines around your primary keyword. Use idea generators and analyze trending content. Draft several headlines and use analyzers to assess effectiveness. **Action:** Select a blog topic and a working headline."
   },
-  // Step 3
+  // Step 3: AI Research (Old 3 & 4)
   {
     id: 3,
-    title: "AI Research (Perplexity)",
+    title: "AI Research",
     icon: "ri-robot-2-line",
     category: "Research & Planning",
-    tools: [
-      { name: "Perplexity AI", url: "https://www.perplexity.ai/", category: "AI Research Tool" },
-      { name: "ChatGPT", url: "https://chat.openai.com", category: "AI Research Assistant" },
-      { name: "Google Scholar", url: "https://scholar.google.com/", category: "Academic Research" }
-    ],
-    description: "Use Perplexity AI for initial in-depth research on your topic and keyword. Explore facets, identify questions, and gather data. Use prompts in the 'Prompts' tab to guide research. **Action:** Conduct research using Perplexity and save key findings below.",
     outputFields: [
-      { name: "researchOutput", label: "Perplexity Research Notes", placeholder: "Paste key findings, insights, and data from Perplexity..." }
-    ]
+      { name: "researchOutput", label: "Initial AI Research Notes", placeholder: "Paste key findings, insights, and data from initial AI research (e.g., Perplexity)..." },
+      { name: "deepResearchOutput", label: "Deep AI Research Notes", placeholder: "Paste key findings, diverse perspectives, and source links from deep AI research (e.g., Gemini, Claude)..." }
+    ],
+    description: "Utilize AI tools (like Perplexity, Gemini, Claude) for initial and deep research on your topic and keyword. Explore facets, gather data, cross-reference, and find unique insights. Use relevant prompts. **Action:** Conduct research and save key findings."
   },
-  // Step 4
+  // Step 4: Outline Creation (Old 5)
   {
     id: 4,
-    title: "Deep Research (Gemini/Grok)",
-    icon: "ri-flask-line",
-    category: "Research & Planning",
-    tools: [
-      { name: "Google Gemini", url: "https://gemini.google.com/", category: "Advanced AI Research" },
-      { name: "Grok AI (X)", url: "https://x.ai/", category: "Advanced AI Research" },
-      { name: "Claude", url: "https://claude.ai/", category: "Advanced AI Research" },
-      { name: "Microsoft Copilot", url: "https://copilot.microsoft.com/", category: "AI Research Assistant" }
-    ],
-    description: "Expand research using Gemini, Grok, or other advanced AI. Focus on cross-referencing, finding unique insights, and addressing nuanced queries. **Action:** Conduct deep research and save key findings below. Use the 'Comprehensive Research Prompt' in the 'Prompts' tab.",
-    outputFields: [
-      { name: "deepResearchOutput", label: "Deep Research Notes", placeholder: "Paste key findings, diverse perspectives, and source links..." }
-    ]
-  },
-  // Step 5
-  {
-    id: 5,
-    title: "Outline Creation (NotebookLM)",
+    title: "Outline Creation",
     icon: "ri-file-list-3-line",
     category: "Content Creation",
-    tools: [
-      { name: "NotebookLM", url: "https://notebooklm.google/", category: "AI Notebook & Outline" },
-      { name: "Notion", url: "https://www.notion.so", category: "Outline & Notes" },
-      { name: "MindMeister", url: "https://www.mindmeister.com", category: "Mind Mapping" }
-    ],
-    description: "Organize research from Steps 3 & 4. Use NotebookLM or your preferred tool to structure a detailed blog outline. Refine for logical flow, comprehensiveness, and SEO. **Action:** Create the final blog outline and paste it below.",
     outputFields: [
       { name: "outlineOutput", label: "Blog Outline", placeholder: "Paste the structured blog outline here (e.g., using Markdown headings)..." }
-    ]
+    ],
+    description: "Organize research from Step 3. Use NotebookLM or your preferred tool to structure a detailed blog outline. Refine for logical flow, comprehensiveness, and SEO. **Action:** Create the final blog outline and paste it below."
   },
-  // Step 6
+  // Step 5: AI Drafting (Old 6)
   {
-    id: 6,
-    title: "AI-Assisted Drafting (Claude)",
+    id: 5,
+    title: "AI Drafting",
     icon: "ri-quill-pen-line",
     category: "Content Creation",
-    tools: [
-      { name: "Claude", url: "https://claude.ai/", category: "AI Drafting Assistant" },
-      { name: "ChatGPT", url: "https://chat.openai.com", category: "AI Drafting Assistant" },
-      { name: "Google Gemini", url: "https://gemini.google.com/", category: "AI Drafting Assistant" }
-    ],
-    description: "Use Claude (or another preferred AI) with your outline and keyword to generate a first draft. Guide the AI with prompts to ensure alignment with [brand voice]. Focus on a complete, well-structured draft. **Action:** Generate the draft using AI and save it below.",
     outputFields: [
       { name: "draftOutput", label: "AI-Generated Draft", placeholder: "Paste the full first draft generated by the AI..." }
-    ]
+    ],
+    description: "Use Claude (or another preferred AI) with your outline and keyword to generate a first draft. Guide the AI with prompts to ensure alignment with [brand voice]. Focus on a complete, well-structured draft. **Action:** Generate the draft using AI and save it below."
   },
-  // Step 7
+  // Step 6: Initial SEO & Multimedia (Old 7 & 8)
+  {
+    id: 6,
+    title: "Initial SEO & Multimedia",
+    icon: "ri-image-line", // Keep image icon as primary
+    category: "Content Creation",
+    outputFields: [
+       { name: "metaDescriptionInitial", label: "Meta Description (Initial)", placeholder: "Draft the initial SEO-optimized meta description (120-155 chars)..." },
+       { name: "selectedImages", label: "Selected Image URLs", placeholder: "List the URLs of chosen images..." },
+       { name: "imageNotes", label: "Image Notes", placeholder: "Notes about image placement, alt text, etc..." }
+    ],
+    description: "Optimize the draft for initial on-page SEO (keywords, meta description). Source and prepare relevant multimedia (images, graphics), optimizing for web. **Actions:** Optimize SEO, prepare media."
+  },
+  // Step 7: Engagement Elements (Old 9)
   {
     id: 7,
-    title: "Initial SEO Optimization",
-    icon: "ri-seo-line",
-    category: "Content Creation",
-    tools: [
-      { name: "Yoast SEO", url: "https://yoast.com/wordpress/plugins/seo/", category: "SEO Plugin (WordPress)" },
-      { name: "Rank Math", url: "https://rankmath.com/", category: "SEO Plugin (WordPress)" },
-      { name: "SEMrush Writing Assistant", url: "https://www.semrush.com/features/seo-writing-assistant/", category: "SEO Writing Guidance" },
-      { name: "Surfer SEO", url: "https://surferseo.com/", category: "SEO Writing Guidance" }
-    ],
-    description: "Optimize the draft for on-page SEO. Refine keyword placement (title, headings, body), plan meta description/tags, and identify linking opportunities. Use SEO tools for guidance. **Action:** Optimize the draft and save the initial meta description.",
-    outputFields: [
-      { name: "metaDescriptionInitial", label: "Meta Description (Initial)", placeholder: "Draft the initial SEO-optimized meta description (120-155 chars)..." }
-    ]
-  },
-  // Step 8
-  {
-    id: 8,
-    title: "Multimedia & Stock Images",
-    icon: "ri-image-line",
-    category: "Content Creation",
-    tools: [
-      { name: "Unsplash", url: "https://unsplash.com/", category: "Free Stock Photos" },
-      { name: "Pexels", url: "https://www.pexels.com/", category: "Free Stock Photos & Videos" },
-      { name: "Canva", url: "https://www.canva.com/", category: "Image Design & Editing" },
-      { name: "Midjourney", url: "https://www.midjourney.com/", category: "AI Image Generation" },
-      { name: "DALL·E", url: "https://openai.com/dall-e-3", category: "AI Image Generation" }
-    ],
-    description: "Source and prepare multimedia elements. Find relevant stock photos, create custom graphics, or generate AI images. Optimize all media for web performance. **Action:** Collect and prepare all visual content for the blog post.",
-    outputFields: [
-      { name: "selectedImages", label: "Selected Image URLs", placeholder: "List the URLs of chosen images..." },
-      { name: "imageNotes", label: "Image Notes", placeholder: "Notes about image placement, alt text, etc..." }
-    ]
-  },
-  // Step 9
-  {
-    id: 9,
-    title: "Engagement Elements (FAQs/CTAs)",
+    title: "Engagement Elements",
     icon: "ri-user-voice-line",
     category: "Content Creation",
-    tools: [
-      { name: "People Also Ask", url: "https://www.google.com/", category: "FAQ Research" },
-      { name: "AnswerSocrates", url: "https://answersocrates.com/", category: "Question Research" },
-      { name: "Button Generator", url: "https://www.buttonoptimizer.com/", category: "CTA Design" }
-    ],
-    description: "Add engagement elements like FAQs, CTAs, and interactive sections. Research common questions and create compelling calls-to-action. **Action:** Draft FAQs and plan strategic CTAs.",
     outputFields: [
       { name: "faqContent", label: "FAQ Content", placeholder: "Enter FAQ questions and answers..." },
       { name: "ctaElements", label: "CTA Elements", placeholder: "Describe CTAs and their placement..." }
-    ]
+    ],
+    description: "Add engagement elements like FAQs, CTAs, and interactive sections. Research common questions and create compelling calls-to-action. **Action:** Draft FAQs and plan strategic CTAs."
   },
-  // Step 10
+  // Step 8: Human Edit: Grammar & Style (Old 10)
   {
-    id: 10,
-    title: "Human Edit: Grammar & Mechanics",
+    id: 8,
+    title: "Human Edit: Grammar & Style",
     icon: "ri-edit-line",
     category: "Refinement & Optimization",
-    tools: [
-      { name: "Grammarly", url: "https://www.grammarly.com/", category: "Grammar & Style Checker" },
-      { name: "ProWritingAid", url: "https://prowritingaid.com/", category: "Writing Enhancement" },
-      { name: "Hemingway Editor", url: "https://hemingwayapp.com/", category: "Readability Check" }
-    ],
-    description: "Perform a thorough human edit focusing on grammar, mechanics, and readability. Use tools to catch errors and improve clarity. **Action:** Edit the content and note any significant changes.",
     outputFields: [
       { name: "editingNotes", label: "Editing Notes", placeholder: "Note major edits and improvements made..." }
-    ]
+    ],
+    description: "Perform a thorough human edit focusing on grammar, mechanics, style ([brand voice]), and readability. Use tools like Grammarly to catch errors and improve clarity. **Action:** Edit the content and note significant changes."
   },
-  // Step 11
+  // Step 9: Fact-Checking & Plagiarism (Old 11 & 12)
+  {
+    id: 9,
+    title: "Fact-Checking & Plagiarism",
+    icon: "ri-shield-check-line", // Keep shield icon
+    category: "Refinement & Optimization",
+    outputFields: [
+        { name: "factCheckNotes", label: "Fact-Check Notes", placeholder: "Document verified facts and sources..." },
+        { name: "plagiarismResults", label: "Plagiarism Check Results", placeholder: "Document plagiarism check findings..." }
+    ],
+    description: "Verify all facts, statistics, and claims. Cross-reference sources. Run a thorough plagiarism check to ensure content originality. **Actions:** Document fact-checking and plagiarism results."
+  },
+  // Step 10: Final Technical Checks (Old 13, 14, 15)
+  {
+    id: 10,
+    title: "Final Technical Checks",
+    icon: "ri-settings-3-line", // Keep settings icon
+    category: "Refinement & Optimization",
+    outputFields: [
+        { name: "technicalChecklist", label: "Technical Checklist", placeholder: "Document completed technical checks..." },
+        { name: "finalMetaDescription", label: "Final Meta Description", placeholder: "Enter the final, optimized meta description..." },
+        { name: "codeFormatNotes", label: "Code Formatting Notes", placeholder: "Document code formatting changes..." },
+        { name: "linkAnalysisNotes", label: "Link Analysis Notes", placeholder: "Document link review findings..." }
+    ],
+    description: "Perform final SEO/technical checks: meta tags, image optimization, internal/external links, mobile responsiveness, code formatting. **Actions:** Complete checks, finalize meta description."
+  },
+  // Step 11: Publish Readiness (Old 16)
   {
     id: 11,
-    title: "Human Edit: Fact-Checking & Refinement",
-    icon: "ri-shield-check-line",
-    category: "Refinement & Optimization",
-    tools: [
-      { name: "Google Scholar", url: "https://scholar.google.com/", category: "Academic Verification" },
-      { name: "Snopes", url: "https://www.snopes.com/", category: "Fact Checking" },
-      { name: "Reuters Fact Check", url: "https://www.reuters.com/fact-check", category: "News Verification" }
-    ],
-    description: "Verify all facts, statistics, and claims. Cross-reference sources and update content as needed. **Action:** Document fact-checking process and any corrections made.",
-    outputFields: [
-      { name: "factCheckNotes", label: "Fact-Check Notes", placeholder: "Document verified facts and sources..." }
-    ]
-  },
-  // Step 12
-  {
-    id: 12,
-    title: "Plagiarism Check",
-    icon: "ri-file-shield-2-line",
-    category: "Refinement & Optimization",
-    tools: [
-      { name: "Copyscape", url: "https://www.copyscape.com/", category: "Plagiarism Detection" },
-      { name: "Quetext", url: "https://www.quetext.com/", category: "Plagiarism Checker" },
-      { name: "Duplichecker", url: "https://www.duplichecker.com/", category: "Free Plagiarism Check" }
-    ],
-    description: "Run a thorough plagiarism check to ensure content originality. Address any potential issues with duplicate content. **Action:** Run plagiarism check and document results.",
-    outputFields: [
-      { name: "plagiarismResults", label: "Plagiarism Check Results", placeholder: "Document plagiarism check findings..." }
-    ]
-  },
-  // Step 13
-  {
-    id: 13,
-    title: "Final SEO & Technical Check",
-    icon: "ri-settings-3-line",
-    category: "Refinement & Optimization",
-    tools: [
-      { name: "Google Search Console", url: "https://search.google.com/search-console", category: "SEO Tools" },
-      { name: "Screaming Frog", url: "https://www.screamingfrog.co.uk/seo-spider/", category: "Technical SEO" },
-      { name: "GTmetrix", url: "https://gtmetrix.com/", category: "Performance Check" }
-    ],
-    description: "Perform final SEO and technical checks. Verify meta tags, image optimization, internal links, and mobile responsiveness. **Action:** Complete technical checklist and finalize meta description.",
-    outputFields: [
-      { name: "technicalChecklist", label: "Technical Checklist", placeholder: "Document completed technical checks..." },
-      { name: "finalMetaDescription", label: "Final Meta Description", placeholder: "Enter the final, optimized meta description..." }
-    ]
-  },
-  // Step 14
-  {
-    id: 14,
-    title: "Code Formatting & Cleanup",
-    icon: "ri-code-s-slash-line",
-    category: "Refinement & Optimization",
-    tools: [
-      { name: "Prettier", url: "https://prettier.io/", category: "Code Formatting" },
-      { name: "HTML Formatter", url: "https://www.freeformatter.com/html-formatter.html", category: "HTML Cleanup" },
-      { name: "CSS Formatter", url: "https://www.cleancss.com/css-beautify/", category: "CSS Cleanup" }
-    ],
-    description: "Clean up and format any code elements (HTML, CSS, etc.). Ensure proper syntax highlighting and code block formatting. **Action:** Format code blocks and document any technical notes.",
-    outputFields: [
-      { name: "codeFormatNotes", label: "Code Formatting Notes", placeholder: "Document code formatting changes..." }
-    ]
-  },
-  // Step 15
-  {
-    id: 15,
-    title: "Link Analysis & Optimization",
-    icon: "ri-link-m",
-    category: "Refinement & Optimization",
-    tools: [
-      { name: "Ahrefs", url: "https://ahrefs.com/", category: "Link Analysis" },
-      { name: "Majestic", url: "https://majestic.com/", category: "Link Intelligence" },
-      { name: "Moz Link Explorer", url: "https://moz.com/link-explorer", category: "Link Research" }
-    ],
-    description: "Review and optimize all links (internal and external). Check for broken links and ensure proper anchor text usage. **Action:** Document link analysis and any changes made.",
-    outputFields: [
-      { name: "linkAnalysisNotes", label: "Link Analysis Notes", placeholder: "Document link review findings..." }
-    ]
-  },
-  // Step 16
-  {
-    id: 16,
-    title: "Final Review & Publish",
+    title: "Publish Readiness",
     icon: "ri-check-double-line",
     category: "Refinement & Optimization",
-    tools: [
-      { name: "WordPress", url: "https://wordpress.org/", category: "CMS" },
-      { name: "Google Analytics", url: "https://analytics.google.com/", category: "Analytics" },
-      { name: "Social Share Preview", url: "https://socialsharepreview.com/", category: "Social Media Preview" }
-    ],
-    description: "Conduct a final review of all elements. Preview the post, check formatting across devices, and prepare for publishing. **Action:** Complete final checklist and publish.",
     outputFields: [
       { name: "finalChecklist", label: "Final Review Checklist", placeholder: "Complete final review checklist..." },
       { name: "publishNotes", label: "Publishing Notes", placeholder: "Add any publishing-related notes..." }
-    ]
+    ],
+    description: "Conduct a final review of all elements. Preview the post, check formatting across devices, and prepare for publishing. **Action:** Complete final checklist and publish."
   }
-]
+];
 
 // Provider component
 export function WorkflowProvider({ children }: { children: React.ReactNode }) {
-  const [steps, setSteps] = useState<Step[]>(workflowSteps)
+  const [steps] = useState<Omit<Step, 'tools'>[]>(workflowSteps) // Use Omit<Step, 'tools'> and remove setSteps
   const [currentStep, setCurrentStep] = useState(1)
   const [stepOutputs, setStepOutputs] = useState<Record<number, Record<string, any>>>({})
   const [primaryKeyword, setPrimaryKeyword] = useState("")
   const [blogOutlineText, setBlogOutlineText] = useState("")
-  const [promptTemplates, setPromptTemplates] = useState<Record<string, Prompt[]>>({})
+  // const [promptTemplates, setPromptTemplates] = useState<Record<string, Prompt[]>>({}) // Remove prompt template state
   const { showFeedback } = useFeedback()
+  const { profileData } = useProfile() // Get profile data
 
   // Storage keys
   const WORKFLOW_STORAGE_KEY = "aiBlogWorkflowDashboardData_v3"
-  const PROMPT_STORAGE_KEY = "promptTemplates_v2"
+  // const PROMPT_STORAGE_KEY = "promptTemplates_v2" // Remove old prompt key
+  const RESOURCE_ASSIGNMENT_KEY = "resourceAssignments_v1" // New key for assignments
+
+  // State for assigned resources
+  const [assignedPrompts, setAssignedPrompts] = useState<Record<number, Prompt[]>>({})
+  const [assignedTools, setAssignedTools] = useState<Record<number, Tool[]>>({})
 
   // Load saved data on mount
   useEffect(() => {
     loadSavedWorkflowData()
-    loadPromptTemplates()
+    // loadPromptTemplates() // Prompt definitions will be loaded by Resource Library hook
+    loadResourceAssignments() // Load assignments
   }, [])
 
   // Load workflow data from localStorage
@@ -375,11 +245,12 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
         setPrimaryKeyword(data.primaryKeyword || "")
         setBlogOutlineText(data.blogOutlineText || "")
 
-        // Load tools data if saved
+        // Load tools data if saved - REMOVED as tools are now managed by assignments
+        /*
         if (data.steps && Array.isArray(data.steps)) {
-          setSteps((prevSteps: Step[]) => {
+          setSteps((prevSteps: Step[]) => { // Error was here: setSteps doesn't exist anymore
             return prevSteps.map((step: Step, index: number) => {
-              if (data.steps[index] && data.steps[index].tools) {
+              if (data.steps[index] && data.steps[index].tools) { // Error was here: tools doesn't exist on Step
                 if (Array.isArray(data.steps[index].tools)) {
                   return { ...step, tools: data.steps[index].tools }
                 }
@@ -388,84 +259,65 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
             })
           })
         }
+        */
 
         console.log("Loaded workflow data from localStorage")
       } catch (e) {
         console.error("Error parsing saved workflow data:", e)
-        clearSavedWorkflowData()
+        clearSavedWorkflowData() // Clear only workflow data on error
       }
     } else {
       console.log("No saved workflow data found, using defaults.")
       const initialStepOutputs: Record<number, Record<string, any>> = {}
-      steps.forEach((step: Step) => {
+      workflowSteps.forEach((step) => { // Use workflowSteps (without tools)
         initialStepOutputs[step.id] = {}
       })
       setStepOutputs(initialStepOutputs)
     }
   }
 
-  // Load prompt templates from localStorage
-  const loadPromptTemplates = () => {
-    const savedPrompts = localStorage.getItem(PROMPT_STORAGE_KEY)
-    if (savedPrompts) {
+  // Load resource assignments from localStorage
+  const loadResourceAssignments = () => {
+    const savedAssignments = localStorage.getItem(RESOURCE_ASSIGNMENT_KEY)
+    if (savedAssignments) {
       try {
-        setPromptTemplates(JSON.parse(savedPrompts))
-        console.log("Loaded prompt templates.")
+        const assignments = JSON.parse(savedAssignments)
+        setAssignedPrompts(assignments.prompts || {})
+        setAssignedTools(assignments.tools || {})
+        console.log("Loaded resource assignments.")
       } catch (e) {
-        console.error("Error loading prompt templates:", e)
-        setPromptTemplates({})
+        console.error("Error loading resource assignments:", e)
+        setAssignedPrompts({})
+        setAssignedTools({})
       }
     } else {
-      // Default prompts
-      const defaultPrompts = {
-        "3": [
-          {
-            id: 301,
-            category: "Perplexity Research",
-            title: "Keyword Cluster Ideas",
-            content:
-              "Generate 5-7 keyword clusters related to [primary keyword], focusing on informational intent. For each cluster, suggest 3 long-tail keywords.",
-            favorite: false,
-          },
-          {
-            id: 302,
-            category: "Perplexity Research",
-            title: "FAQ Generation",
-            content:
-              "Identify the top 10 frequently asked questions about [primary keyword] based on current search trends and 'People Also Ask'.",
-            favorite: true,
-          },
-        ],
-        "6": [
-          {
-            id: 601,
-            category: "AI Drafting",
-            title: "Blog Post Section Draft",
-            content:
-              "Draft the section '[Section Title from Outline]' for a blog post about [primary keyword], based on the following points from the outline:\n[Paste relevant outline points here]\n\nMaintain a [brand voice] tone for a [Specify Audience, e.g., beginner] audience.",
-            favorite: false,
-          },
-        ],
-      }
-      setPromptTemplates(defaultPrompts)
-      savePromptTemplates(defaultPrompts)
+      console.log("No saved resource assignments found.")
+      // Optionally load default assignments here if needed
     }
   }
 
-  // Save workflow data to localStorage
-  const saveWorkflowData = () => {
-    if (!stepOutputs[1]) stepOutputs[1] = {}
-    stepOutputs[1].primaryKeyword = primaryKeyword
+  // Load prompt templates from localStorage - REMOVED (will be in Resource Library hook)
+  /*
+  const loadPromptTemplates = () => { ... }
+  */
 
-    if (!stepOutputs[5]) stepOutputs[5] = {}
-    const outlineText = stepOutputs[5]?.outlineOutput || blogOutlineText
+  // Save workflow data to localStorage
+  const saveWorkflowData = useCallback(() => { // Use useCallback
+    // Ensure step 1 output exists
+    const outputsToSave = { ...stepOutputs }
+    if (!outputsToSave[1]) outputsToSave[1] = {}
+    outputsToSave[1].primaryKeyword = primaryKeyword
+
+    // Ensure step 5 output exists for outline
+    if (!outputsToSave[5]) outputsToSave[5] = {}
+    const outlineText = outputsToSave[5]?.outlineOutput || blogOutlineText
 
     const data = {
-      stepOutputs,
+      stepOutputs: outputsToSave, // Save the potentially modified outputs
       currentStep,
       primaryKeyword,
       blogOutlineText: outlineText,
-      steps: steps.map((step: Step) => ({ tools: step.tools || [] })),
+      // steps: steps.map((step: Step) => ({ tools: step.tools || [] })), // DO NOT save steps/tools here anymore - Error was here: tools doesn't exist
     }
 
     try {
@@ -474,39 +326,47 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       console.error("Error saving workflow data:", e)
       showFeedback("Error saving progress. Data might be too large.", "error")
     }
-  }
+  }, [stepOutputs, currentStep, primaryKeyword, blogOutlineText, showFeedback]) // Add dependencies
 
-  // Clear saved workflow data
+  // Debounced save function
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      saveWorkflowData()
+    }, 500) // Save 500ms after the last change
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [saveWorkflowData]) // Re-run when saveWorkflowData changes (due to its dependencies)
+
+
+  // Clear saved workflow data (ONLY workflow-specific data)
   const clearSavedWorkflowData = () => {
     const initialStepOutputs: Record<number, Record<string, any>> = {}
-    steps.forEach((step: Step) => {
+    workflowSteps.forEach((step) => { // Use workflowSteps
       initialStepOutputs[step.id] = {}
     })
     setStepOutputs(initialStepOutputs)
     setCurrentStep(1)
     setPrimaryKeyword("")
     setBlogOutlineText("")
-    localStorage.removeItem(WORKFLOW_STORAGE_KEY)
+    localStorage.removeItem(WORKFLOW_STORAGE_KEY) // Only remove this key
     console.log("Cleared saved workflow data.")
+    // DO NOT clear resource assignments, prompts, tools, or profile data here
   }
 
-  // Save prompt templates to localStorage
-  const savePromptTemplates = (templates = promptTemplates) => {
-    try {
-      localStorage.setItem(PROMPT_STORAGE_KEY, JSON.stringify(templates))
-    } catch (e) {
-      console.error("Error saving prompt templates:", e)
-      showFeedback("Error saving prompt library.", "error")
-    }
-  }
+  // Save prompt templates to localStorage - REMOVED (will be in Resource Library hook)
+  /*
+  const savePromptTemplates = (templates = promptTemplates) => { ... }
+  */
 
   // Show a specific step
   const showStep = (stepId: number) => {
     if (stepId < 1) stepId = 1
-    if (stepId > steps.length + 1) stepId = steps.length + 1
+    if (stepId > workflowSteps.length + 1) stepId = workflowSteps.length + 1 // Use workflowSteps length
 
     setCurrentStep(stepId)
-    saveWorkflowData()
+    // saveWorkflowData() // Saving is now debounced
   }
 
   // Navigate to next step
@@ -538,8 +398,8 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       return newOutputs
     })
 
-    // Save to localStorage after state update
-    setTimeout(() => saveWorkflowData(), 0)
+    // Save to localStorage after state update - Handled by debounced saveWorkflowData
+    // setTimeout(() => saveWorkflowData(), 0)
   }
 
   // Update primary keyword
@@ -547,7 +407,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     const trimmedKeyword = keyword.trim()
     if (primaryKeyword !== trimmedKeyword) {
       setPrimaryKeyword(trimmedKeyword)
-      autoSaveOutput(stepId, "primaryKeyword", trimmedKeyword)
+      autoSaveOutput(stepId, "primaryKeyword", trimmedKeyword) // This will trigger debounced save
       showFeedback("Primary keyword updated.", "info")
     }
   }
@@ -556,82 +416,57 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   const resetWorkflow = () => {
     if (
       window.confirm(
-        "Are you sure you want to reset the current workflow? All step outputs and the primary keyword will be cleared. Profile settings will remain.",
+        "Are you sure you want to reset the current workflow? All step outputs and the primary keyword will be cleared. Profile settings and resource assignments will remain.", // Updated confirmation message
       )
     ) {
-      clearSavedWorkflowData()
+      clearSavedWorkflowData() // Only clears workflow data now
       showFeedback("Workflow has been reset.", "success")
     }
   }
 
-  // Add a tool to a step
-  const addTool = (stepId: number, tool: Tool) => {
-    setSteps((prev: Step[]) => {
-      return prev.map((step: Step) => {
-        if (step.id === stepId) {
-          const updatedTools = [...(step.tools || []), tool]
-          return { ...step, tools: updatedTools }
-        }
-        return step
-      })
-    })
+  // Add a tool to a step - REMOVED
+  /*
+  const addTool = (stepId: number, tool: Tool) => { ... } // Error was here: setSteps doesn't exist
+  */
 
-    // Save to localStorage after state update
-    setTimeout(() => saveWorkflowData(), 0)
-  }
+  // Remove a tool from a step - REMOVED
+  /*
+  const removeTool = (stepId: number, toolIndex: number) => { ... } // Error was here: setSteps doesn't exist
+  */
 
-  // Remove a tool from a step
-  const removeTool = (stepId: number, toolIndex: number) => {
-    setSteps((prev: Step[]) => {
-      return prev.map((step: Step) => {
-        if (step.id === stepId && step.tools) {
-          const updatedTools = [...step.tools]
-          updatedTools.splice(toolIndex, 1)
-          return { ...step, tools: updatedTools }
-        }
-        return step
-      })
-    })
+  // Add a prompt to a step - REMOVED
+  /*
+  const addPrompt = (stepId: number, prompt: Prompt) => { ... } // Error was here: setPromptTemplates doesn't exist
+  */
 
-    // Save to localStorage after state update
-    setTimeout(() => saveWorkflowData(), 0)
-  }
-
-  // Add a prompt to a step
-  const addPrompt = (stepId: number, prompt: Prompt) => {
-    setPromptTemplates((prev: Record<string, Prompt[]>) => {
-      const newTemplates = { ...prev }
-      if (!newTemplates[stepId]) {
-        newTemplates[stepId] = []
-      }
-      newTemplates[stepId].push(prompt)
-      return newTemplates
-    })
-
-    // Save to localStorage after state update
-    setTimeout(() => savePromptTemplates(), 0)
-  }
-
-  // Delete a prompt from a step
-  const deletePrompt = (stepId: number, promptId: number) => {
-    setPromptTemplates((prev: Record<string, Prompt[]>) => {
-      const newTemplates = { ...prev }
-      if (newTemplates[stepId]) {
-        newTemplates[stepId] = newTemplates[stepId].filter((p: Prompt) => p.id !== promptId)
-        if (newTemplates[stepId].length === 0) {
-          delete newTemplates[stepId]
-        }
-      }
-      return newTemplates
-    })
-
-    // Save to localStorage after state update
-    setTimeout(() => savePromptTemplates(), 0)
-  }
+  // Delete a prompt from a step - REMOVED
+  /*
+  const deletePrompt = (stepId: number, promptId: number) => { ... } // Error was here: setPromptTemplates doesn't exist
+  */
 
   // Replace output placeholders in prompt content
-  const replaceOutputPlaceholders = (content: string) => {
+  const replaceOutputPlaceholders = useCallback((content: string) => { // Use useCallback
     let updatedContent = content
+    const { profileData } = useProfile(); // Get profile data inside the function
+
+    // Replace static profile placeholders first
+    const staticPlaceholders: { [key: string]: keyof ProfileData } = {
+      "\\[logo url\\]": "logoUrl",
+      "\\[our domain\\]": "ourDomain",
+      "\\[general competitors\\]": "generalCompetitors",
+      "\\[brand voice\\]": "brandVoice",
+      "\\[social handles\\]": "socialHandles",
+      "\\[sitemap url\\]": "sitemapUrl",
+      "\\[wp admin url\\]": "wpAdminUrl",
+    };
+
+    for (const placeholder in staticPlaceholders) {
+      const profileKey = staticPlaceholders[placeholder];
+      const regex = new RegExp(placeholder, "gi");
+      const value = profileData[profileKey] || `(${placeholder.replace(/\\\[|\\\]/g, '')} Not Set in Profile)`;
+      updatedContent = updatedContent.replace(regex, value.trim() === "" ? `(${placeholder.replace(/\\\[|\\\]/g, '')} Not Set in Profile)` : value);
+    }
+
 
     // Replace [output from step X: field] placeholders
     const outputPlaceholderRegex = /\[output from step (\d+):\s*([^\]]+)\]/gi
@@ -673,27 +508,28 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     }
 
     return updatedContent
-  }
+  }, [stepOutputs, blogOutlineText, primaryKeyword, profileData]) // Add dependencies
 
   return (
     <WorkflowContext.Provider
       value={{
-        steps,
+        steps, // Pass the static steps definition
         currentStep,
         stepOutputs,
         primaryKeyword,
         blogOutlineText,
-        promptTemplates,
+        assignedPrompts, // Pass assigned prompts
+        assignedTools, // Pass assigned tools
         showStep,
         nextStep,
         prevStep,
         autoSaveOutput,
         updatePrimaryKeyword,
         resetWorkflow,
-        addTool,
-        removeTool,
-        addPrompt,
-        deletePrompt,
+        // addTool, // Removed
+        // removeTool, // Removed
+        // addPrompt, // Removed
+        // deletePrompt, // Removed
         replaceOutputPlaceholders,
       }}
     >

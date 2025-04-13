@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useWorkflow, type Step } from "@/hooks/use-workflow" // Import Step type
-import { useProfile } from "@/hooks/use-profile"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { useWorkflow, type Step } from "@/hooks/use-workflow"; // Import Step type
+import { useProfile } from "@/hooks/use-profile";
+import { useResourceLibrary } from "@/hooks/useResourceLibrary"; // Import the new hook
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Info, FileText, PenToolIcon as Tool, Search, Save, Plus } from "lucide-react"
 import StepDescription from "@/components/step-tabs/step-description"
 import StepPrompts from "@/components/step-tabs/step-prompts"
@@ -16,30 +17,30 @@ import StepOutputs from "@/components/step-tabs/step-outputs"
 
 export default function StepContent({
   stepData,
-  onOpenAddTool,
-  onOpenPromptForm,
 }: {
-  stepData: Step | null // Use imported Step type
-  onOpenAddTool: () => void
-  onOpenPromptForm: () => void
+  stepData: Step | null; // Use imported Step type
 }) {
-  const { promptTemplates, primaryKeyword } = useWorkflow()
-  const { profileData } = useProfile()
-  const [activeTab, setActiveTab] = useState("description")
+  const { primaryKeyword } = useWorkflow(); // Keep primaryKeyword if needed by StepDescription
+  const { profileData } = useProfile();
+  const { getPromptsForStep, getToolsForStep } = useResourceLibrary(); // Get functions from new hook
+  const [activeTab, setActiveTab] = useState("description");
 
   useEffect(() => {
     // Reset to description tab when step changes
     setActiveTab("description")
   }, [stepData?.id])
 
-  if (!stepData) return <div>Loading step content...</div>
+  if (!stepData) return <div>Loading step content...</div>;
 
-  const stepId = stepData.id
-  const stepPrompts = promptTemplates[String(stepId)] || []
-  const hasPrompts = stepPrompts.length > 0
-  const hasTools = stepData.tools && stepData.tools.length > 0
-  const hasSearch = [1, 3, 4].includes(stepId)
-  const hasOutputs = stepData.outputFields || stepId === 16
+  const stepId = stepData.id;
+  const assignedPrompts = getPromptsForStep(stepId);
+  const assignedTools = getToolsForStep(stepId);
+
+  const hasPrompts = assignedPrompts.length > 0;
+  const hasTools = assignedTools.length > 0;
+  const hasSearch = [1, 3].includes(stepId); // Updated: Show search for new steps 1 and 3
+  const hasOutputs = stepData.outputFields || stepId === 11; // Updated: Check against new final step ID (11)
+  const showToolsTab = hasTools || stepId === 6; // Updated: Special case for new step 6 (Initial SEO & Multimedia)
 
   return (
     <div>
@@ -58,18 +59,18 @@ export default function StepContent({
               value="prompts"
               className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
-              <FileText className="w-4 h-4 mr-1.5" /> Prompts ({stepPrompts.length}) {/* Adjusted margin */}
+              <FileText className="w-4 h-4 mr-1.5" /> Prompts ({assignedPrompts.length}) {/* Use assignedPrompts length */}
             </TabsTrigger>
           )}
 
-          {(hasTools || stepId === 8) && (
+          {showToolsTab && ( // Use showToolsTab flag
             <TabsTrigger
               value="tools"
               className="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm" /* Adjusted styles */
             >
               <Tool className="w-4 h-4 mr-1.5" /> {/* Adjusted margin */}
-              Tools {stepId !== 8 ? `(${(stepData.tools || []).length})` : ""}
-              {stepId === 8 ? "& Images" : ""}
+              Tools {stepId !== 6 ? `(${assignedTools.length})` : ""} {/* Updated: Check against new step ID (6) */}
+              {stepId === 6 ? "& Images" : ""} {/* Updated: Check against new step ID (6) */}
             </TabsTrigger>
           )}
 
@@ -101,27 +102,25 @@ export default function StepContent({
           <TabsContent value="prompts" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
             <div className="flex justify-between items-center mb-3"> {/* Adjusted margin */}
               <h3 className="text-lg font-semibold flex items-center"> {/* Adjusted size */}
-                <FileText className="w-4 h-4 mr-2 text-primary" /> Workflow Prompts {/* Adjusted icon size */}
+                <FileText className="w-4 h-4 mr-2 text-primary" /> Assigned Prompts {/* Adjusted icon size & Title */}
               </h3>
-              <Button onClick={onOpenPromptForm} size="sm" variant="outline"> {/* Added variant */}
-                <Plus className="w-4 h-4 mr-1.5" /> Add New Prompt {/* Adjusted margin */}
-              </Button>
+              {/* Removed Add New Prompt Button */}
             </div>
-            <StepPrompts stepData={stepData} />
+            {/* TODO: Refactor StepPrompts to use assignedPrompts from useResourceLibrary */}
+            <StepPrompts stepData={stepData} /> {/* Remove assignedPrompts prop for now */}
           </TabsContent>
         )}
 
-        {(hasTools || stepId === 8) && (
+        {showToolsTab && ( // Use showToolsTab flag
           <TabsContent value="tools" className="bg-card rounded-lg p-5 border shadow-sm mt-0 animate-fade-in">
             <div className="flex justify-between items-center mb-3"> {/* Adjusted margin */}
               <h3 className="text-lg font-semibold flex items-center"> {/* Adjusted size */}
-                <Tool className="w-4 h-4 mr-2 text-primary" /> Recommended Tools {/* Adjusted icon size */}
+                <Tool className="w-4 h-4 mr-2 text-primary" /> Assigned Tools {/* Adjusted icon size & Title */}
               </h3>
-              <Button onClick={onOpenAddTool} size="sm" variant="outline"> {/* Added variant */}
-                <Plus className="w-4 h-4 mr-1.5" /> Add Tool {/* Adjusted margin */}
-              </Button>
+              {/* Removed Add Tool Button */}
             </div>
-            <StepTools stepData={stepData} />
+             {/* TODO: Refactor StepTools to use assignedTools from useResourceLibrary */}
+            <StepTools stepData={stepData} /> {/* Remove assignedTools prop for now */}
           </TabsContent>
         )}
 

@@ -4,25 +4,26 @@ import { useState } from "react"
 import Sidebar from "@/components/sidebar"
 import ContentArea from "@/components/content-area"
 import FinalMessage from "@/components/final-message"
-import FeedbackContainer from "@/components/feedback-container"
-import { ToolModal, ToolLibraryModal } from "@/components/tool-modals"
-import { PromptModal, PromptLibraryModal } from "@/components/prompt-modals"
-import ProfileModal from "@/components/profile-modal"
-import QuickNavigation from "@/components/quick-navigation"
-import { useWorkflow } from "@/hooks/use-workflow"
+import FeedbackContainer from "@/components/feedback-container";
+// import { ToolLibraryModal } from "@/components/tool-modals"; // Remove ToolLibraryModal import
+// import { PromptLibraryModal } from "@/components/prompt-modals"; // Remove PromptLibraryModal import
+import ResourceLibraryModal from "@/components/resource-library-modal"; // Import the new modal
+import ProfileModal from "@/components/profile-modal";
+import QuickNavigation from "@/components/quick-navigation";
+import { useWorkflow } from "@/hooks/use-workflow";
 import { useFeedback } from "@/hooks/use-feedback"
 
 export default function Dashboard() {
   const { currentStep, steps, resetWorkflow } = useWorkflow()
-  const { feedbacks } = useFeedback()
+  const { feedbacks } = useFeedback();
   const [showModals, setShowModals] = useState({
-    addTool: false,
-    toolLibrary: false,
-    promptForm: false,
-    promptLibrary: false,
+    // toolLibrary: false, // Remove state for tool library modal
+    // promptLibrary: false, // Remove state for prompt library modal
+    resourceLibrary: false, // Add state for unified resource library modal
     profile: false,
-  })
+  });
 
+  // Update toggleModal type to include resourceLibrary
   const toggleModal = (modalName: keyof typeof showModals, state?: boolean) => {
     setShowModals((prev) => ({
       ...prev,
@@ -41,28 +42,27 @@ export default function Dashboard() {
         {/* Removed styling from inner container, kept flex layout and gap */}
         <div className="flex-1 flex gap-2">
           <Sidebar
-            onOpenToolLibrary={() => toggleModal("toolLibrary", true)}
-            onOpenPromptLibrary={() => toggleModal("promptLibrary", true)}
+            // onOpenToolLibrary={() => toggleModal("toolLibrary", true)} // Remove prop
+            // onOpenPromptLibrary={() => toggleModal("promptLibrary", true)} // Remove prop
+            onOpenResourceLibrary={() => toggleModal("resourceLibrary", true)} // Add new prop
             onResetWorkflow={resetWorkflow}
             onOpenProfileModal={() => toggleModal("profile", true)}
           />
 
           <ContentArea
-            onOpenAddTool={() => toggleModal("addTool", true)}
-            onOpenPromptForm={() => toggleModal("promptForm", true)}
+            // onOpenAddTool={() => toggleModal("addTool", true)} // Remove prop
+            // onOpenPromptForm={() => toggleModal("promptForm", true)} // Remove prop
           />
-        </div>
-      </div>
+         </div>
+       </div>
 
-      {isWorkflowComplete && <FinalMessage />}
+       {isWorkflowComplete && <FinalMessage />} {/* Re-add conditional rendering of FinalMessage */}
 
-      <FeedbackContainer feedbacks={feedbacks} />
+       <FeedbackContainer feedbacks={feedbacks} />
 
       {/* Modals */}
-      <ToolModal isOpen={showModals.addTool} onClose={() => toggleModal("addTool", false)} />
-      <ToolLibraryModal isOpen={showModals.toolLibrary} onClose={() => toggleModal("toolLibrary", false)} />
-      <PromptModal isOpen={showModals.promptForm} onClose={() => toggleModal("promptForm", false)} />
-      <PromptLibraryModal isOpen={showModals.promptLibrary} onClose={() => toggleModal("promptLibrary", false)} />
+      {/* Removed old library modals */}
+      <ResourceLibraryModal isOpen={showModals.resourceLibrary} onClose={() => toggleModal("resourceLibrary", false)} /> {/* Render the new modal */}
       <ProfileModal isOpen={showModals.profile} onClose={() => toggleModal("profile", false)} />
 
       <QuickNavigation />

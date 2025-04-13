@@ -1,40 +1,36 @@
-"use client"
+"use client";
 
-import { useWorkflow, type Step, type Tool } from "@/hooks/use-workflow" // Import types
-import { useFeedback } from "@/hooks/use-feedback"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardFooter } from "@/components/ui/card" // Removed CardContent
-import { ExternalLink, X } from "lucide-react"
-import StockImageSearch from "@/components/stock-image-search"
+import { type Step, type Tool } from "@/hooks/use-workflow"; // Import types
+import { useResourceLibrary } from "@/hooks/useResourceLibrary"; // Import useResourceLibrary
+import { useFeedback } from "@/hooks/use-feedback";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardFooter } from "@/components/ui/card"; // Removed CardContent
+import { ExternalLink } from "lucide-react"; // Removed X
+import StockImageSearch from "@/components/stock-image-search";
 
 export default function StepTools({ stepData }: { stepData: Step }) { // Use Step type
-  const { removeTool } = useWorkflow()
-  const { showFeedback } = useFeedback()
+  const { getToolsForStep } = useResourceLibrary(); // Get assigned tools function
+  const { showFeedback } = useFeedback(); // Keep for potential future use?
 
-  const tools = stepData.tools || []
+  const assignedTools = getToolsForStep(stepData.id); // Get assigned tools
 
+  // Remove handleRemoveTool function as it's no longer needed
+  /*
   const handleRemoveTool = (index: number) => {
     if (window.confirm("Are you sure you want to remove this tool?")) {
-      removeTool(stepData.id, index)
+      removeTool(stepData.id, index) // removeTool is no longer available here
       showFeedback("Tool removed.", "info")
     }
   }
+  */
 
   return (
     <div>
-      {tools.length > 0 ? (
+      {assignedTools.length > 0 ? ( // Check assignedTools length
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {tools.map((tool: Tool, index: number) => ( // Use Tool type
+          {assignedTools.map((tool: Tool, index: number) => ( // Iterate over assignedTools
             <Card key={index} className="relative group">
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-3 right-3 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleRemoveTool(index)}
-                aria-label="Remove tool"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
+              {/* Removed Remove button */}
 
               <CardHeader className="space-y-2 pb-4">
                 <h4 className="font-heading font-semibold text-base">{tool.name}</h4>
@@ -59,12 +55,12 @@ export default function StepTools({ stepData }: { stepData: Step }) { // Use Ste
           ))}
         </div>
       ) : (
-        stepData.id !== 8 && (
-          <p className="text-muted-foreground">No specific tools recommended for this step. You can add your own.</p>
-        )
-      )}
+        stepData.id !== 8 && ( // Keep special handling for step 8
+          <p className="text-muted-foreground">No tools assigned to this step. Assign tools in the Resource Library.</p> // Updated message
+         )
+       )}
 
-      {stepData.id === 8 && <StockImageSearch />}
-    </div>
-  )
+       {stepData.id === 6 && <StockImageSearch />} {/* Updated step ID check to 6 */}
+     </div>
+   )
 }
