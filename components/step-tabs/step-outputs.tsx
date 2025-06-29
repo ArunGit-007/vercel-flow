@@ -1,17 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react" // Removed useRef
-import { useWorkflow, type Step, type OutputField } from "@/hooks/use-workflow" // Import types
+import { useState, useEffect } from "react"
+import { useWorkflow, type Step, type OutputField } from "@/hooks/use-workflow"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Save, FileCheck, FileText } from "lucide-react"
 
-export default function StepOutputs({ stepData }: { stepData: Step }) { // Use Step type
-  const { stepOutputs, autoSaveOutput } = useWorkflow() // Removed unused primaryKeyword, blogOutlineText
+export default function StepOutputs({ stepData }: { stepData: Step }) {
+  const { stepOutputs, autoSaveOutput } = useWorkflow()
   const [wordCounts, setWordCounts] = useState<Record<string, number>>({})
-
-  // Removed unused isInitialRender ref
 
   const updateWordCount = (text: string, fieldId: string) => {
     const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).filter(Boolean).length
@@ -26,25 +24,24 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
     updateWordCount(value, fieldId)
   }
 
-  // For final step (16) - generate final blog output
+  // For final step (11) - generate final blog output
   const generateFinalBlogOutput = () => {
     const outputOrder = [
       { stepId: 1, field: "primaryKeyword", label: "Primary Keyword" },
       { stepId: 2, field: "selectedTopic", label: "Selected Topic" },
       { stepId: 2, field: "workingHeadline", label: "Working Headline" },
-      { stepId: 7, field: "metaDescriptionInitial", label: "Meta Description (Initial)" },
-      { stepId: 13, field: "metaDescriptionFinal", label: "Meta Description (Final)" },
-      { stepId: 3, field: "researchOutput", label: "Perplexity Research Notes" },
-      { stepId: 4, field: "deepResearchOutput", label: "Deep Research Notes" },
-      { stepId: 5, field: "outlineOutput", label: "Blog Outline" },
-      { stepId: 6, field: "draftOutput", label: "AI-Generated Draft" },
-      { stepId: 10, field: "editedDraftGrammar", label: "Draft after Grammar Edit" },
-      { stepId: 11, field: "editedDraftRefined", label: "Draft after Refinement" },
-      { stepId: 9, field: "faqContent", label: "FAQs" },
-      { stepId: 9, field: "ctaContent", label: "CTAs" },
-      { stepId: 15, field: "linkAuditNotes", label: "Link Audit Notes" },
-      { stepId: 14, field: "finalHtmlCode", label: "Final Code (HTML/Markdown)" },
-      ...[1, 3, 4].flatMap((id) => {
+      { stepId: 6, field: "metaDescriptionInitial", label: "Meta Description (Initial)" },
+      { stepId: 10, field: "finalMetaDescription", label: "Meta Description (Final)" },
+      { stepId: 3, field: "researchOutput", label: "Initial AI Research Notes" },
+      { stepId: 3, field: "deepResearchOutput", label: "Deep AI Research Notes" },
+      { stepId: 4, field: "outlineOutput", label: "Blog Outline" },
+      { stepId: 5, field: "draftOutput", label: "AI-Generated Draft" },
+      { stepId: 8, field: "editingNotes", label: "Editing Notes" },
+      { stepId: 7, field: "faqContent", label: "FAQs" },
+      { stepId: 7, field: "ctaElements", label: "CTAs" },
+      { stepId: 10, field: "linkAnalysisNotes", label: "Link Analysis Notes" },
+      { stepId: 10, field: "codeFormatNotes", label: "Code Formatting Notes" },
+      ...[1, 3].flatMap((id) => {
         const queries = stepOutputs[id]?.savedSearchQueries || []
         return queries.length > 0
           ? [{ stepId: id, field: "savedSearchQueries", label: `Saved Search Queries (Step ${id})` }]
@@ -66,24 +63,17 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
           {outputOrder.map((item) => {
             let outputContent = stepOutputs[item.stepId]?.[item.field] || ""
             const isSearchQueries = item.field === "savedSearchQueries"
-            const outputId = `review-output-step${item.stepId}-${item.field}` // Define outputId here
+            const outputId = `review-output-step${item.stepId}-${item.field}`
 
             if (isSearchQueries && Array.isArray(outputContent)) {
-              outputContent = outputContent.map((q) => q.query).join("\n")
+              outputContent = outputContent.map((q: any) => q.query).join("\n")
             } else if (typeof outputContent !== "string") {
               outputContent = JSON.stringify(outputContent, null, 2)
             }
 
-            // Move useEffect call outside the conditional
-            // useEffect(() => {
-            //   if (outputContent.trim()) {
-            //     updateWordCount(outputContent, outputId)
-            //   }
-            // }, [outputContent, outputId])
-
             if (outputContent.trim()) {
               const rows =
-                item.field.includes("Draft") || item.field === "finalHtmlCode" || item.field === "outlineOutput"
+                item.field.includes("Draft") || item.field === "codeFormatNotes" || item.field === "outlineOutput"
                   ? 20
                   : 8
 
@@ -131,31 +121,29 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
   }
 
   const exportReport = (format: "text" | "markdown" | "html") => {
-    // This would be implemented with the export functionality
     console.log(`Exporting in ${format} format`)
     alert(`Exporting in ${format} format. This functionality would be implemented here.`)
   }
 
   useEffect(() => {
-    if (stepData.id === 16) {
-      // When stepData.id is 16, loop through outputOrder and update word counts
+    if (stepData.id === 11) {
+      // When stepData.id is 11, loop through outputOrder and update word counts
       const outputOrder = [
         { stepId: 1, field: "primaryKeyword", label: "Primary Keyword" },
         { stepId: 2, field: "selectedTopic", label: "Selected Topic" },
         { stepId: 2, field: "workingHeadline", label: "Working Headline" },
-        { stepId: 7, field: "metaDescriptionInitial", label: "Meta Description (Initial)" },
-        { stepId: 13, field: "metaDescriptionFinal", label: "Meta Description (Final)" },
-        { stepId: 3, field: "researchOutput", label: "Perplexity Research Notes" },
-        { stepId: 4, field: "deepResearchOutput", label: "Deep Research Notes" },
-        { stepId: 5, field: "outlineOutput", label: "Blog Outline" },
-        { stepId: 6, field: "draftOutput", label: "AI-Generated Draft" },
-        { stepId: 10, field: "editedDraftGrammar", label: "Draft after Grammar Edit" },
-        { stepId: 11, field: "editedDraftRefined", label: "Draft after Refinement" },
-        { stepId: 9, field: "faqContent", label: "FAQs" },
-        { stepId: 9, field: "ctaContent", label: "CTAs" },
-        { stepId: 15, field: "linkAuditNotes", label: "Link Audit Notes" },
-        { stepId: 14, field: "finalHtmlCode", label: "Final Code (HTML/Markdown)" },
-        ...[1, 3, 4].flatMap((id) => {
+        { stepId: 6, field: "metaDescriptionInitial", label: "Meta Description (Initial)" },
+        { stepId: 10, field: "finalMetaDescription", label: "Meta Description (Final)" },
+        { stepId: 3, field: "researchOutput", label: "Initial AI Research Notes" },
+        { stepId: 3, field: "deepResearchOutput", label: "Deep AI Research Notes" },
+        { stepId: 4, field: "outlineOutput", label: "Blog Outline" },
+        { stepId: 5, field: "draftOutput", label: "AI-Generated Draft" },
+        { stepId: 8, field: "editingNotes", label: "Editing Notes" },
+        { stepId: 7, field: "faqContent", label: "FAQs" },
+        { stepId: 7, field: "ctaElements", label: "CTAs" },
+        { stepId: 10, field: "linkAnalysisNotes", label: "Link Analysis Notes" },
+        { stepId: 10, field: "codeFormatNotes", label: "Code Formatting Notes" },
+        ...[1, 3].flatMap((id) => {
           const queries = stepOutputs[id]?.savedSearchQueries || []
           return queries.length > 0
             ? [{ stepId: id, field: "savedSearchQueries", label: `Saved Search Queries (Step ${id})` }]
@@ -169,7 +157,7 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
         const outputId = `review-output-step${item.stepId}-${item.field}`
 
         if (isSearchQueries && Array.isArray(outputContent)) {
-          outputContent = outputContent.map((q) => q.query).join("\n")
+          outputContent = outputContent.map((q: any) => q.query).join("\n")
         } else if (typeof outputContent !== "string") {
           outputContent = JSON.stringify(outputContent, null, 2)
         }
@@ -179,9 +167,9 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
         }
       })
     } else {
-      // When stepData.id is not 16, loop through stepData.outputFields and update word counts
+      // When stepData.id is not 11, loop through stepData.outputFields and update word counts
       if (stepData.outputFields) {
-        stepData.outputFields.forEach((outputField: OutputField) => { // Use OutputField type
+        stepData.outputFields.forEach((outputField: OutputField) => {
           const outputId = `output-${stepData.id}-${outputField.name}`
           const currentStepOutputs = stepOutputs[stepData.id] || {}
           const savedOutput = currentStepOutputs[outputField.name] || ""
@@ -192,7 +180,7 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
     }
   }, [stepData, stepOutputs])
 
-  if (stepData.id === 16) {
+  if (stepData.id === 11) {
     return generateFinalBlogOutput()
   }
 
@@ -207,15 +195,10 @@ export default function StepOutputs({ stepData }: { stepData: Step }) { // Use S
       </h3>
 
       <div className="space-y-8">
-        {stepData.outputFields.map((outputField: OutputField) => { // Use OutputField type
+        {stepData.outputFields.map((outputField: OutputField) => {
           const outputId = `output-${stepData.id}-${outputField.name}`
           const currentStepOutputs = stepOutputs[stepData.id] || {}
           const savedOutput = currentStepOutputs[outputField.name] || ""
-
-          // Move useEffect call outside the conditional
-          // useEffect(() => {
-          //   updateWordCount(savedOutput, outputId)
-          // }, [savedOutput, outputId])
 
           return (
             <div key={outputId} className="space-y-3">

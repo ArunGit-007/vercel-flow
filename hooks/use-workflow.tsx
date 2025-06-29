@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react";
-import { createContext, useContext, useState, useEffect, useCallback } from "react"; // Add useCallback
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useFeedback } from "@/hooks/use-feedback";
-import { useProfile, ProfileData } from "@/hooks/use-profile"; // Import useProfile and ProfileData
+import { useProfile, type ProfileData } from "@/hooks/use-profile";
 
 // Define interfaces (and export them)
 export interface Tool {
@@ -31,7 +31,6 @@ export interface Step {
   title: string
   icon: string
   category: string
-  // tools?: Tool[] // Remove default tools from step definition - will be managed by assignments
   inputField?: InputField[]
   outputFields?: OutputField[]
   description: string
@@ -52,19 +51,14 @@ type WorkflowContextType = {
   stepOutputs: Record<number, Record<string, any>>
   primaryKeyword: string
   blogOutlineText: string
-  // promptTemplates: Record<string, Prompt[]> // Prompt definitions will be managed elsewhere
-  assignedPrompts: Record<number, Prompt[]> // State for assigned prompts per step
-  assignedTools: Record<number, Tool[]> // State for assigned tools per step
+  assignedPrompts: Record<number, Prompt[]>
+  assignedTools: Record<number, Tool[]>
   showStep: (stepId: number) => void
   nextStep: () => void
   prevStep: () => void
   autoSaveOutput: (stepId: number, outputName: string, outputValue: any) => void
   updatePrimaryKeyword: (keyword: string, stepId: number) => void
   resetWorkflow: () => void
-  // addTool: (stepId: number, tool: Tool) => void // Remove - managed by Resource Library
-  // removeTool: (stepId: number, toolIndex: number) => void // Remove - managed by Resource Library
-  // addPrompt: (stepId: number, prompt: Prompt) => void // Remove - managed by Resource Library
-  // deletePrompt: (stepId: number, promptId: number) => void // Remove - managed by Resource Library
   replaceOutputPlaceholders: (content: string) => string
 }
 
@@ -72,8 +66,8 @@ type WorkflowContextType = {
 const WorkflowContext = createContext<WorkflowContextType | undefined>(undefined);
 
 // Define the NEW 11-step workflow structure
-const workflowSteps: Omit<Step, 'tools'>[] = [
-  // Step 1: Keyword & Competitor Research (Old 1)
+const workflowSteps: Step[] = [
+  // Step 1: Keyword & Competitor Research
   {
     id: 1,
     title: "Keyword & Competitor Research",
@@ -85,7 +79,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Analyze competitor URLs ranking for the target keyword using tools like Ahrefs or SEMrush. Identify content gaps, angles, and search intent. Extract LSI keywords. Finalize your primary keyword and define specific competitor URLs below. **Note:** Your website domain and general competitor domains can be set in Profile Settings."
   },
-  // Step 2: Topic & Headline Brainstorm (Old 2)
+  // Step 2: Topic & Headline Brainstorm
   {
     id: 2,
     title: "Topic & Headline Brainstorm",
@@ -97,7 +91,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Brainstorm compelling blog topics and engaging headlines around your primary keyword. Use idea generators and analyze trending content. Draft several headlines and use analyzers to assess effectiveness. **Action:** Select a blog topic and a working headline."
   },
-  // Step 3: AI Research (Old 3 & 4)
+  // Step 3: AI Research
   {
     id: 3,
     title: "AI Research",
@@ -109,7 +103,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Utilize AI tools (like Perplexity, Gemini, Claude) for initial and deep research on your topic and keyword. Explore facets, gather data, cross-reference, and find unique insights. Use relevant prompts. **Action:** Conduct research and save key findings."
   },
-  // Step 4: Outline Creation (Old 5)
+  // Step 4: Outline Creation
   {
     id: 4,
     title: "Outline Creation",
@@ -120,7 +114,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Organize research from Step 3. Use NotebookLM or your preferred tool to structure a detailed blog outline. Refine for logical flow, comprehensiveness, and SEO. **Action:** Create the final blog outline and paste it below."
   },
-  // Step 5: AI Drafting (Old 6)
+  // Step 5: AI Drafting
   {
     id: 5,
     title: "AI Drafting",
@@ -131,11 +125,11 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Use Claude (or another preferred AI) with your outline and keyword to generate a first draft. Guide the AI with prompts to ensure alignment with [brand voice]. Focus on a complete, well-structured draft. **Action:** Generate the draft using AI and save it below."
   },
-  // Step 6: Initial SEO & Multimedia (Old 7 & 8)
+  // Step 6: Initial SEO & Multimedia
   {
     id: 6,
     title: "Initial SEO & Multimedia",
-    icon: "ri-image-line", // Keep image icon as primary
+    icon: "ri-image-line",
     category: "Content Creation",
     outputFields: [
        { name: "metaDescriptionInitial", label: "Meta Description (Initial)", placeholder: "Draft the initial SEO-optimized meta description (120-155 chars)..." },
@@ -144,7 +138,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Optimize the draft for initial on-page SEO (keywords, meta description). Source and prepare relevant multimedia (images, graphics), optimizing for web. **Actions:** Optimize SEO, prepare media."
   },
-  // Step 7: Engagement Elements (Old 9)
+  // Step 7: Engagement Elements
   {
     id: 7,
     title: "Engagement Elements",
@@ -156,7 +150,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Add engagement elements like FAQs, CTAs, and interactive sections. Research common questions and create compelling calls-to-action. **Action:** Draft FAQs and plan strategic CTAs."
   },
-  // Step 8: Human Edit: Grammar & Style (Old 10)
+  // Step 8: Human Edit: Grammar & Style
   {
     id: 8,
     title: "Human Edit: Grammar & Style",
@@ -167,11 +161,11 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Perform a thorough human edit focusing on grammar, mechanics, style ([brand voice]), and readability. Use tools like Grammarly to catch errors and improve clarity. **Action:** Edit the content and note significant changes."
   },
-  // Step 9: Fact-Checking & Plagiarism (Old 11 & 12)
+  // Step 9: Fact-Checking & Plagiarism
   {
     id: 9,
     title: "Fact-Checking & Plagiarism",
-    icon: "ri-shield-check-line", // Keep shield icon
+    icon: "ri-shield-check-line",
     category: "Refinement & Optimization",
     outputFields: [
         { name: "factCheckNotes", label: "Fact-Check Notes", placeholder: "Document verified facts and sources..." },
@@ -179,11 +173,11 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Verify all facts, statistics, and claims. Cross-reference sources. Run a thorough plagiarism check to ensure content originality. **Actions:** Document fact-checking and plagiarism results."
   },
-  // Step 10: Final Technical Checks (Old 13, 14, 15)
+  // Step 10: Final Technical Checks
   {
     id: 10,
     title: "Final Technical Checks",
-    icon: "ri-settings-3-line", // Keep settings icon
+    icon: "ri-settings-3-line",
     category: "Refinement & Optimization",
     outputFields: [
         { name: "technicalChecklist", label: "Technical Checklist", placeholder: "Document completed technical checks..." },
@@ -193,7 +187,7 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
     ],
     description: "Perform final SEO/technical checks: meta tags, image optimization, internal/external links, mobile responsiveness, code formatting. **Actions:** Complete checks, finalize meta description."
   },
-  // Step 11: Publish Readiness (Old 16)
+  // Step 11: Publish Readiness
   {
     id: 11,
     title: "Publish Readiness",
@@ -209,19 +203,17 @@ const workflowSteps: Omit<Step, 'tools'>[] = [
 
 // Provider component
 export function WorkflowProvider({ children }: { children: React.ReactNode }) {
-  const [steps] = useState<Omit<Step, 'tools'>[]>(workflowSteps) // Use Omit<Step, 'tools'> and remove setSteps
+  const [steps] = useState<Step[]>(workflowSteps)
   const [currentStep, setCurrentStep] = useState(1)
   const [stepOutputs, setStepOutputs] = useState<Record<number, Record<string, any>>>({})
   const [primaryKeyword, setPrimaryKeyword] = useState("")
   const [blogOutlineText, setBlogOutlineText] = useState("")
-  // const [promptTemplates, setPromptTemplates] = useState<Record<string, Prompt[]>>({}) // Remove prompt template state
   const { showFeedback } = useFeedback()
-  const { profileData } = useProfile() // Get profile data
+  const { profileData } = useProfile()
 
   // Storage keys
   const WORKFLOW_STORAGE_KEY = "aiBlogWorkflowDashboardData_v3"
-  // const PROMPT_STORAGE_KEY = "promptTemplates_v2" // Remove old prompt key
-  const RESOURCE_ASSIGNMENT_KEY = "resourceAssignments_v1" // New key for assignments
+  const RESOURCE_ASSIGNMENT_KEY = "resourceAssignments_v1"
 
   // State for assigned resources
   const [assignedPrompts, setAssignedPrompts] = useState<Record<number, Prompt[]>>({})
@@ -230,8 +222,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   // Load saved data on mount
   useEffect(() => {
     loadSavedWorkflowData()
-    // loadPromptTemplates() // Prompt definitions will be loaded by Resource Library hook
-    loadResourceAssignments() // Load assignments
+    loadResourceAssignments()
   }, [])
 
   // Load workflow data from localStorage
@@ -245,31 +236,15 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
         setPrimaryKeyword(data.primaryKeyword || "")
         setBlogOutlineText(data.blogOutlineText || "")
 
-        // Load tools data if saved - REMOVED as tools are now managed by assignments
-        /*
-        if (data.steps && Array.isArray(data.steps)) {
-          setSteps((prevSteps: Step[]) => { // Error was here: setSteps doesn't exist anymore
-            return prevSteps.map((step: Step, index: number) => {
-              if (data.steps[index] && data.steps[index].tools) { // Error was here: tools doesn't exist on Step
-                if (Array.isArray(data.steps[index].tools)) {
-                  return { ...step, tools: data.steps[index].tools }
-                }
-              }
-              return step
-            })
-          })
-        }
-        */
-
         console.log("Loaded workflow data from localStorage")
       } catch (e) {
         console.error("Error parsing saved workflow data:", e)
-        clearSavedWorkflowData() // Clear only workflow data on error
+        clearSavedWorkflowData()
       }
     } else {
       console.log("No saved workflow data found, using defaults.")
       const initialStepOutputs: Record<number, Record<string, any>> = {}
-      workflowSteps.forEach((step) => { // Use workflowSteps (without tools)
+      workflowSteps.forEach((step) => {
         initialStepOutputs[step.id] = {}
       })
       setStepOutputs(initialStepOutputs)
@@ -292,32 +267,25 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       console.log("No saved resource assignments found.")
-      // Optionally load default assignments here if needed
     }
   }
 
-  // Load prompt templates from localStorage - REMOVED (will be in Resource Library hook)
-  /*
-  const loadPromptTemplates = () => { ... }
-  */
-
   // Save workflow data to localStorage
-  const saveWorkflowData = useCallback(() => { // Use useCallback
+  const saveWorkflowData = useCallback(() => {
     // Ensure step 1 output exists
     const outputsToSave = { ...stepOutputs }
     if (!outputsToSave[1]) outputsToSave[1] = {}
     outputsToSave[1].primaryKeyword = primaryKeyword
 
-    // Ensure step 5 output exists for outline
-    if (!outputsToSave[5]) outputsToSave[5] = {}
-    const outlineText = outputsToSave[5]?.outlineOutput || blogOutlineText
+    // Ensure step 4 output exists for outline
+    if (!outputsToSave[4]) outputsToSave[4] = {}
+    const outlineText = outputsToSave[4]?.outlineOutput || blogOutlineText
 
     const data = {
-      stepOutputs: outputsToSave, // Save the potentially modified outputs
+      stepOutputs: outputsToSave,
       currentStep,
       primaryKeyword,
       blogOutlineText: outlineText,
-      // steps: steps.map((step: Step) => ({ tools: step.tools || [] })), // DO NOT save steps/tools here anymore - Error was here: tools doesn't exist
     }
 
     try {
@@ -326,47 +294,39 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       console.error("Error saving workflow data:", e)
       showFeedback("Error saving progress. Data might be too large.", "error")
     }
-  }, [stepOutputs, currentStep, primaryKeyword, blogOutlineText, showFeedback]) // Add dependencies
+  }, [stepOutputs, currentStep, primaryKeyword, blogOutlineText, showFeedback])
 
   // Debounced save function
   useEffect(() => {
     const handler = setTimeout(() => {
       saveWorkflowData()
-    }, 500) // Save 500ms after the last change
+    }, 500)
 
     return () => {
       clearTimeout(handler)
     }
-  }, [saveWorkflowData]) // Re-run when saveWorkflowData changes (due to its dependencies)
+  }, [saveWorkflowData])
 
-
-  // Clear saved workflow data (ONLY workflow-specific data)
+  // Clear saved workflow data
   const clearSavedWorkflowData = () => {
     const initialStepOutputs: Record<number, Record<string, any>> = {}
-    workflowSteps.forEach((step) => { // Use workflowSteps
+    workflowSteps.forEach((step) => {
       initialStepOutputs[step.id] = {}
     })
     setStepOutputs(initialStepOutputs)
     setCurrentStep(1)
     setPrimaryKeyword("")
     setBlogOutlineText("")
-    localStorage.removeItem(WORKFLOW_STORAGE_KEY) // Only remove this key
+    localStorage.removeItem(WORKFLOW_STORAGE_KEY)
     console.log("Cleared saved workflow data.")
-    // DO NOT clear resource assignments, prompts, tools, or profile data here
   }
-
-  // Save prompt templates to localStorage - REMOVED (will be in Resource Library hook)
-  /*
-  const savePromptTemplates = (templates = promptTemplates) => { ... }
-  */
 
   // Show a specific step
   const showStep = (stepId: number) => {
     if (stepId < 1) stepId = 1
-    if (stepId > workflowSteps.length + 1) stepId = workflowSteps.length + 1 // Use workflowSteps length
+    if (stepId > workflowSteps.length + 1) stepId = workflowSteps.length + 1
 
     setCurrentStep(stepId)
-    // saveWorkflowData() // Saving is now debounced
   }
 
   // Navigate to next step
@@ -391,15 +351,12 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       newOutputs[stepId][outputName] = outputValue
 
       // Special handling for outline
-      if (stepId === 5 && outputName === "outlineOutput") {
+      if (stepId === 4 && outputName === "outlineOutput") {
         setBlogOutlineText(outputValue)
       }
 
       return newOutputs
     })
-
-    // Save to localStorage after state update - Handled by debounced saveWorkflowData
-    // setTimeout(() => saveWorkflowData(), 0)
   }
 
   // Update primary keyword
@@ -407,7 +364,7 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     const trimmedKeyword = keyword.trim()
     if (primaryKeyword !== trimmedKeyword) {
       setPrimaryKeyword(trimmedKeyword)
-      autoSaveOutput(stepId, "primaryKeyword", trimmedKeyword) // This will trigger debounced save
+      autoSaveOutput(stepId, "primaryKeyword", trimmedKeyword)
       showFeedback("Primary keyword updated.", "info")
     }
   }
@@ -416,38 +373,17 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
   const resetWorkflow = () => {
     if (
       window.confirm(
-        "Are you sure you want to reset the current workflow? All step outputs and the primary keyword will be cleared. Profile settings and resource assignments will remain.", // Updated confirmation message
+        "Are you sure you want to reset the current workflow? All step outputs and the primary keyword will be cleared. Profile settings and resource assignments will remain.",
       )
     ) {
-      clearSavedWorkflowData() // Only clears workflow data now
+      clearSavedWorkflowData()
       showFeedback("Workflow has been reset.", "success")
     }
   }
 
-  // Add a tool to a step - REMOVED
-  /*
-  const addTool = (stepId: number, tool: Tool) => { ... } // Error was here: setSteps doesn't exist
-  */
-
-  // Remove a tool from a step - REMOVED
-  /*
-  const removeTool = (stepId: number, toolIndex: number) => { ... } // Error was here: setSteps doesn't exist
-  */
-
-  // Add a prompt to a step - REMOVED
-  /*
-  const addPrompt = (stepId: number, prompt: Prompt) => { ... } // Error was here: setPromptTemplates doesn't exist
-  */
-
-  // Delete a prompt from a step - REMOVED
-  /*
-  const deletePrompt = (stepId: number, promptId: number) => { ... } // Error was here: setPromptTemplates doesn't exist
-  */
-
   // Replace output placeholders in prompt content
-  const replaceOutputPlaceholders = useCallback((content: string) => { // Use useCallback
+  const replaceOutputPlaceholders = useCallback((content: string) => {
     let updatedContent = content
-    const { profileData } = useProfile(); // Get profile data inside the function
 
     // Replace static profile placeholders first
     const staticPlaceholders: { [key: string]: keyof ProfileData } = {
@@ -466,7 +402,6 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
       const value = profileData[profileKey] || `(${placeholder.replace(/\\\[|\\\]/g, '')} Not Set in Profile)`;
       updatedContent = updatedContent.replace(regex, value.trim() === "" ? `(${placeholder.replace(/\\\[|\\\]/g, '')} Not Set in Profile)` : value);
     }
-
 
     // Replace [output from step X: field] placeholders
     const outputPlaceholderRegex = /\[output from step (\d+):\s*([^\]]+)\]/gi
@@ -508,28 +443,24 @@ export function WorkflowProvider({ children }: { children: React.ReactNode }) {
     }
 
     return updatedContent
-  }, [stepOutputs, blogOutlineText, primaryKeyword, profileData]) // Add dependencies
+  }, [stepOutputs, blogOutlineText, primaryKeyword, profileData])
 
   return (
     <WorkflowContext.Provider
       value={{
-        steps, // Pass the static steps definition
+        steps,
         currentStep,
         stepOutputs,
         primaryKeyword,
         blogOutlineText,
-        assignedPrompts, // Pass assigned prompts
-        assignedTools, // Pass assigned tools
+        assignedPrompts,
+        assignedTools,
         showStep,
         nextStep,
         prevStep,
         autoSaveOutput,
         updatePrimaryKeyword,
         resetWorkflow,
-        // addTool, // Removed
-        // removeTool, // Removed
-        // addPrompt, // Removed
-        // deletePrompt, // Removed
         replaceOutputPlaceholders,
       }}
     >
