@@ -19,9 +19,9 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "AI Blog Workflow Dashboard",
-  description: "Streamline your blog creation process with AI assistance",
-  generator: 'v0.dev'
+  title: "ContentForge Pro - AI Content Creation Suite",
+  description: "Professional content creation platform with AI-powered workflows for digital marketers and content creators",
+  generator: 'ContentForge Pro'
 }
 
 export default function RootLayout({
